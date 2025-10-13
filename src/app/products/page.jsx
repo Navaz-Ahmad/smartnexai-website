@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+// Corrected this line to remove TypeScript syntax
 const ProductCard = ({ title, description, version }) => (
   <div className="bg-gray-800/50 p-8 rounded-lg border border-gray-700 flex flex-col">
     <div className="flex-grow">

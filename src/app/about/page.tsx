@@ -1,5 +1,6 @@
 import Image from 'next/image';
 
+// Added types to this component
 const TeamMember = ({ name, role, imageUrl }: { name: string; role: string; imageUrl: string }) => (
   <div className="text-center">
     <div className="relative w-32 h-32 mx-auto rounded-full overflow-hidden ring-4 ring-gray-700">
