@@ -1,4 +1,4 @@
-'use client'; // This directive is needed for using React hooks like useState
+'use client'; 
 
 import Link from 'next/link';
 import { useState } from 'react';
@@ -6,14 +6,18 @@ import { useState } from 'react';
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
 
-  // This array controls the navigation links
   const navLinks = [
     { name: 'Home', href: '/' },
-    { name: 'About Us', href: '/about' }, // <-- This line creates the link
+    { name: 'About Us', href: '/about' },
     { name: 'Services', href: '/services' },
     { name: 'Products', href: '/products' },
     { name: 'Contact Us', href: '/contact' },
   ];
+
+  // A new function to handle closing the menu
+  const handleLinkClick = () => {
+    setIsOpen(false);
+  };
 
   return (
     <header className="bg-dark-bg/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800">
@@ -42,7 +46,6 @@ const Header = () => {
              </Link>
            </div>
 
-
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center">
             <button
@@ -69,12 +72,24 @@ const Header = () => {
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navLinks.map((link) => (
-              <Link key={link.name} href={link.href} className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+              <Link 
+                key={link.name} 
+                href={link.href} 
+                className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+                // --- THIS IS THE CHANGE ---
+                // We've added this onClick event to close the menu
+                onClick={handleLinkClick}
+              >
                 {link.name}
               </Link>
             ))}
              <div className="mt-4">
-              <Link href="/contact" className="bg-accent text-dark-bg font-semibold py-2 px-4 rounded-lg hover:bg-opacity-80 transition-all duration-300 block text-center">
+              <Link 
+                href="/contact" 
+                className="bg-accent text-dark-bg font-semibold py-2 px-4 rounded-lg hover:bg-opacity-80 transition-all duration-300 block text-center"
+                // Also adding it to the mobile "Get a Quote" button
+                onClick={handleLinkClick}
+              >
                   Get a Quote
               </Link>
             </div>
