@@ -4,10 +4,11 @@ import { motion } from "framer-motion";
 import { useCallback } from "react";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
+import type { Engine } from "tsparticles-engine";
 
 // --- Animated Background Component ---
 const AnimatedBackground = () => {
-    const particlesInit = useCallback(async (engine: any) => {
+    const particlesInit = useCallback(async (engine: Engine) => {
         await loadSlim(engine);
     }, []);
 

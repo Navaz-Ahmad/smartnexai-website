@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useEffect, useRef, useCallback } from "react";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
-
+import type { Engine } from "tsparticles-engine";
 // --- SVG Icon Components ---
 const BrainCircuitIcon = () => (
   <svg
@@ -59,7 +59,7 @@ const ExpertTeamIcon = () => (
 
 // --- Animated Background Component ---
 const AnimatedBackground = () => {
-    const particlesInit = useCallback(async (engine) => {
+    const particlesInit = useCallback(async (engine: Engine) => {
         await loadSlim(engine);
     }, []);
 
@@ -224,7 +224,7 @@ export default function Home() {
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.5 }}>
               <h2 className="text-3xl md:text-4xl font-bold text-white">Ready to Transform Your Business?</h2>
               <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-neutral-300">
-                Let's discuss how SmartNex.ai can become your innovation partner. Connect with our experts today for a free consultation.
+                Let&apos;s discuss how SmartNex.ai can become your innovation partner. Connect with our experts today for a free consultation.
               </p>
               <motion.div className="mt-8">
                  <a href="/contact" className="inline-block text-white font-semibold py-4 px-10 rounded-lg text-lg transition-all duration-300"

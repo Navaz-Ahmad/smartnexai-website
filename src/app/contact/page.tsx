@@ -1,13 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useCallback } from "react";
+import { useCallback, useState } from "react"; // --- ADDED: useState for form
+// --- REVERTED IMPORTS TO FIX BUILD ERROR ---
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
+import type { Engine } from "tsparticles-engine";
 
 // --- Animated Background Component ---
 const AnimatedBackground = () => {
-    const particlesInit = useCallback(async (engine) => {
+    const particlesInit = useCallback(async (engine: Engine) => {
         await loadSlim(engine);
     }, []);
 
@@ -46,6 +48,33 @@ export default function ContactPage() {
     const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.2 } } };
     const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } };
     
+    // --- ADDED: State for form inputs ---
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+    });
+
+    // --- ADDED: Handler for input changes ---
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prevState => ({
+            ...prevState,
+            [name]: value,
+        }));
+    };
+    
+    // --- ADDED: Handler for form submission ---
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault(); // Prevents the default page reload
+        console.log("Form Submitted:", formData);
+        // Here you would typically send the formData to an API endpoint
+        alert("Thank you for your message! (See console for data)");
+        // Optionally reset form
+        setFormData({ name: '', email: '', subject: '', message: '' });
+    };
+
     return (
         <div style={{ fontFamily: "'Poppins', sans-serif" }} className="overflow-x-hidden">
             <AnimatedBackground />
@@ -96,7 +125,8 @@ export default function ContactPage() {
                         style={{background: 'rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.25)', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.35)'}}
                         variants={itemVariants}
                     >
-                        <form action="#" method="POST">
+                        {/* --- FIXED: Added onSubmit handler --- */}
+                        <form onSubmit={handleSubmit}>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Full Name Input */}
                                 <div>
@@ -105,6 +135,9 @@ export default function ContactPage() {
                                         type="text" 
                                         id="name" 
                                         name="name" 
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        required
                                         className="mt-2 block w-full bg-black/20 border border-neutral-700 rounded-md shadow-sm py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition" 
                                     />
                                 </div>
@@ -116,6 +149,9 @@ export default function ContactPage() {
                                         type="email" 
                                         id="email" 
                                         name="email" 
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        required
                                         className="mt-2 block w-full bg-black/20 border border-neutral-700 rounded-md shadow-sm py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition" 
                                     />
                                 </div>
@@ -128,6 +164,9 @@ export default function ContactPage() {
                                     type="text" 
                                     id="subject" 
                                     name="subject" 
+                                    value={formData.subject}
+                                    onChange={handleChange}
+                                    required
                                     className="mt-2 block w-full bg-black/20 border border-neutral-700 rounded-md shadow-sm py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition" 
                                 />
                             </div>
@@ -139,6 +178,9 @@ export default function ContactPage() {
                                     id="message" 
                                     name="message" 
                                     rows={5} 
+                                    value={formData.message}
+                                    onChange={handleChange}
+                                    required
                                     className="mt-2 block w-full bg-black/20 border border-neutral-700 rounded-md shadow-sm py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                                 ></textarea>
                             </div>
@@ -165,3 +207,4 @@ export default function ContactPage() {
         </div>
     );
 }
+

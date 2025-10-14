@@ -2,14 +2,14 @@
 
 import { motion } from "framer-motion";
 import { useCallback } from "react";
-// --- FIXED IMPORTS ---
-import Particles from "@tsparticles/react";
-import { loadSlim } from "@tsparticles/slim";
+import Particles from "react-tsparticles";
+import { loadSlim } from "tsparticles-slim";
+import type { Engine } from "tsparticles-engine";
 import Image from 'next/image';
 
 // --- Animated Background Component ---
 const AnimatedBackground = () => {
-    const particlesInit = useCallback(async (engine: any) => { // Using 'any' for engine type for simplicity
+    const particlesInit = useCallback(async (engine: Engine) => {
         await loadSlim(engine);
     }, []);
 
@@ -44,11 +44,10 @@ const AnimatedBackground = () => {
     );
 };
 
-// This is a helper component for displaying team members.
+// --- Team Member Helper Component ---
 const TeamMember = ({ name, role, imageUrl }: { name: string; role: string; imageUrl: string }) => (
-    <div className="text-center p-8 rounded-xl" style={{background: 'rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.25)', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.35)'}}>
+    <div className="text-center p-8 rounded-xl h-full" style={{background: 'rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.25)', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.35)'}}>
         <div className="relative w-32 h-32 mx-auto rounded-full overflow-hidden ring-4 ring-blue-500/50">
-            {/* --- FIXED: Replaced <img> with Next.js <Image> --- */}
             <Image 
                 src={imageUrl} 
                 alt={name} 
@@ -61,12 +60,14 @@ const TeamMember = ({ name, role, imageUrl }: { name: string; role: string; imag
     </div>
 );
 
+// --- Main About Page Component ---
 export default function AboutPage() {
     const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.2 } } };
     const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } };
+    const cardHoverEffect = { scale: 1.05, boxShadow: "0px 10px 30px -5px rgba(0, 0, 0, 0.3)", transition: { type: "spring", stiffness: 400, damping: 10 } };
 
     return (
-        <div style={{ fontFamily: "'Poppins', sans-serif" }} className="overflow-x-hidden">
+        <div style={{ fontFamily: "'Poppins', sans-serif" }} className="text-neutral-800 dark:text-neutral-200 overflow-x-hidden">
             <AnimatedBackground />
 
             {/* Hero Section */}
@@ -80,6 +81,7 @@ export default function AboutPage() {
                     <motion.h1 
                         style={{
                             fontWeight: '700',
+                            WebkitBackgroundClip: 'text',
                             color: '#00c6ff',
                             textShadow: '0 0 20px rgba(0, 198, 255, 0.8)',
                         }}
@@ -90,6 +92,7 @@ export default function AboutPage() {
                     </motion.h1>
                     <motion.p 
                         style={{
+                            fontWeight: '500',
                             color: '#ffffffdd',
                             textShadow: '0 0 8px rgba(255, 255, 255, 0.4)',
                         }}
@@ -112,8 +115,9 @@ export default function AboutPage() {
                 >
                     <motion.div 
                         className="p-8 rounded-xl" 
-                        style={{background: 'rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.25)'}}
+                        style={{background: 'rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.25)', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.35)'}}
                         variants={itemVariants}
+                        whileHover={cardHoverEffect}
                     >
                         <h2 className="text-3xl font-bold text-white">Our Mission</h2>
                         <p className="mt-4 text-neutral-300 text-lg">
@@ -122,8 +126,9 @@ export default function AboutPage() {
                     </motion.div>
                     <motion.div 
                         className="p-8 rounded-xl" 
-                        style={{background: 'rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.25)'}}
+                        style={{background: 'rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.25)', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.35)'}}
                         variants={itemVariants}
+                        whileHover={cardHoverEffect}
                     >
                         <h2 className="text-3xl font-bold text-white">Our Vision</h2>
                         <p className="mt-4 text-neutral-300 text-lg">
@@ -152,11 +157,42 @@ export default function AboutPage() {
                         variants={containerVariants}
                         viewport={{ once: true, amount: 0.2 }}
                     >
-                        <motion.div variants={itemVariants}><TeamMember name="Dr. Evelyn Reed" role="Founder & CEO" imageUrl="https://placehold.co/200x200/00c6ff/FFFFFF?text=ER" /></motion.div>
-                        <motion.div variants={itemVariants}><TeamMember name="Marcus Chen" role="Chief Technology Officer" imageUrl="https://placehold.co/200x200/00c6ff/FFFFFF?text=MC" /></motion.div>
-                        <motion.div variants={itemVariants}><TeamMember name="Alina Petrova" role="Head of Research" imageUrl="https://placehold.co/200x200/00c6ff/FFFFFF?text=AP" /></motion.div>
-                        <motion.div variants={itemVariants}><TeamMember name="Kenji Tanaka" role="Lead AI Engineer" imageUrl="https://placehold.co/200x200/00c6ff/FFFFFF?text=KT" /></motion.div>
+                        <motion.div variants={itemVariants} whileHover={cardHoverEffect}><TeamMember name="Dr. Evelyn Reed" role="Founder & CEO" imageUrl="https://placehold.co/200x200/00c6ff/FFFFFF?text=ER" /></motion.div>
+                        <motion.div variants={itemVariants} whileHover={cardHoverEffect}><TeamMember name="Marcus Chen" role="Chief Technology Officer" imageUrl="https://placehold.co/200x200/00c6ff/FFFFFF?text=MC" /></motion.div>
+                        <motion.div variants={itemVariants} whileHover={cardHoverEffect}><TeamMember name="Alina Petrova" role="Head of Research" imageUrl="https://placehold.co/200x200/00c6ff/FFFFFF?text=AP" /></motion.div>
+                        <motion.div variants={itemVariants} whileHover={cardHoverEffect}><TeamMember name="Kenji Tanaka" role="Lead AI Engineer" imageUrl="https://placehold.co/200x200/00c6ff/FFFFFF?text=KT" /></motion.div>
                     </motion.div>
+                </div>
+            </section>
+
+             {/* CTA Section */}
+             <section className="py-20 relative z-10">
+                <div className="container mx-auto px-6 text-center">
+                    <div className="rounded-xl p-12" style={{background: 'rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.25)', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.35)'}}>
+                        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.5 }}>
+                            <h2 className="text-3xl md:text-4xl font-bold text-white">Ready to Transform Your Business?</h2>
+                            <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-neutral-300">
+                                Let&apos;s discuss how SmartNex.ai can become your innovation partner. Connect with our experts today for a free consultation.
+                            </p>
+                            <motion.div 
+                                className="mt-8"
+                                whileHover={{ scale: 1.05 }} 
+                                whileTap={{ scale: 0.95 }}
+                            >
+                               <a href="/contact" className="inline-block text-white font-semibold py-4 px-10 rounded-lg text-lg transition-all duration-300"
+                                  style={{
+                                    background: 'linear-gradient(90deg, #00c6ff, #0072ff)',
+                                    border: 'none',
+                                    boxShadow: '0 0 10px rgba(0, 198, 255, 0.4)',
+                                  }}
+                                  onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 198, 255, 0.7)')}
+                                  onMouseLeave={(e) => (e.currentTarget.style.boxShadow = '0 0 10px rgba(0, 198, 255, 0.4)')}
+                               >
+                                Get Started
+                              </a>
+                            </motion.div>
+                        </motion.div>
+                    </div>
                 </div>
             </section>
         </div>
