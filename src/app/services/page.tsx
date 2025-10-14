@@ -7,7 +7,7 @@ import { loadSlim } from "tsparticles-slim";
 
 // --- Animated Background Component ---
 const AnimatedBackground = () => {
-    const particlesInit = useCallback(async (engine) => {
+    const particlesInit = useCallback(async (engine: any) => {
         await loadSlim(engine);
     }, []);
 
@@ -43,7 +43,7 @@ const AnimatedBackground = () => {
 };
 
 // Updated ServiceCard to match the glassmorphic design
-const ServiceCard = ({ title, description, iconPath }) => (
+const ServiceCard = ({ title, description, iconPath }: { title: string, description: string, iconPath: string }) => (
     <motion.div
         className="p-8 rounded-xl flex flex-col"
         style={{

@@ -7,7 +7,7 @@ import { loadSlim } from "tsparticles-slim";
 
 // --- Animated Background Component ---
 const AnimatedBackground = () => {
-    const particlesInit = useCallback(async (engine) => {
+    const particlesInit = useCallback(async (engine: any) => {
         await loadSlim(engine);
     }, []);
 
@@ -43,7 +43,7 @@ const AnimatedBackground = () => {
 };
 
 // ProductCard Component with new styling
-const ProductCard = ({ title, description, version }) => (
+const ProductCard = ({ title, description, version }: { title: string, description: string, version: string }) => (
   <motion.div 
     className="p-8 rounded-xl flex flex-col" 
     style={{
@@ -152,4 +152,3 @@ export default function ProductsPage() {
         </div>
     );
 }
-

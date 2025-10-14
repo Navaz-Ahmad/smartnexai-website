@@ -2,12 +2,14 @@
 
 import { motion } from "framer-motion";
 import { useCallback } from "react";
-import Particles from "react-tsparticles";
-import { loadSlim } from "tsparticles-slim";
+// --- FIXED IMPORTS ---
+import Particles from "@tsparticles/react";
+import { loadSlim } from "@tsparticles/slim";
+import Image from 'next/image';
 
 // --- Animated Background Component ---
 const AnimatedBackground = () => {
-    const particlesInit = useCallback(async (engine) => {
+    const particlesInit = useCallback(async (engine: any) => { // Using 'any' for engine type for simplicity
         await loadSlim(engine);
     }, []);
 
@@ -46,7 +48,13 @@ const AnimatedBackground = () => {
 const TeamMember = ({ name, role, imageUrl }: { name: string; role: string; imageUrl: string }) => (
     <div className="text-center p-8 rounded-xl" style={{background: 'rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.25)', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.35)'}}>
         <div className="relative w-32 h-32 mx-auto rounded-full overflow-hidden ring-4 ring-blue-500/50">
-            <img src={imageUrl} alt={name} className="absolute w-full h-full object-cover" />
+            {/* --- FIXED: Replaced <img> with Next.js <Image> --- */}
+            <Image 
+                src={imageUrl} 
+                alt={name} 
+                fill 
+                className="object-cover" 
+            />
         </div>
         <h3 className="mt-6 text-xl font-semibold text-white">{name}</h3>
         <p style={{color: '#00c6ff'}} className="font-medium text-lg">{role}</p>
@@ -154,4 +162,3 @@ export default function AboutPage() {
         </div>
     );
 }
-
