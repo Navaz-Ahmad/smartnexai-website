@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+// We need to import 'ReactNode' to tell TypeScript what type 'children' is
+import type { ReactNode } from 'react';
 import Link from "next/link";
 import "./globals.css";
 import Header from "../components/Header";
@@ -9,7 +11,9 @@ export const metadata: Metadata = {
   description: "SmartNex.ai delivers cutting-edge AI solutions, including custom machine learning models, data analytics, and NLP to drive business growth and innovation.",
 };
 
-export default function RootLayout({ children }) {
+// --- THIS IS THE FIX ---
+// The 'children' prop now has the correct type, which will resolve the build error.
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
@@ -32,8 +36,7 @@ export default function RootLayout({ children }) {
             flex items-center justify-center 
             shadow-lg 
             transform transition-transform hover:scale-110 
-            z-40 
-            /* The 'md:hidden' class has been REMOVED from this line */
+            z-40
           "
           aria-label="Contact Us"
         >

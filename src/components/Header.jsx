@@ -1,6 +1,5 @@
 'use client'; 
 
-import Link from 'next/link';
 import { useState } from 'react';
 
 const Header = () => {
@@ -20,45 +19,60 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-dark-bg/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800">
+    <header 
+        className="sticky top-0 z-50"
+        style={{
+            background: 'rgba(13, 27, 42, 0.85)', 
+            backdropFilter: 'blur(12px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+        }}
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link href="/" className="text-2xl font-bold text-gradient">
+            <a href="/" className="text-3xl font-bold" style={{color: '#00c6ff', textShadow: '0 0 20px rgba(0, 198, 255, 0.7)'}}>
               SmartNex.ai
-            </Link>
+            </a>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex md:items-center md:space-x-8">
             {navLinks.map((link) => (
-              <Link key={link.name} href={link.href} className="text-gray-300 hover:text-accent transition-colors duration-200">
+              <a key={link.name} href={link.href} className="text-lg font-medium text-gray-300 hover:text-white transition-colors duration-300">
                 {link.name}
-              </Link>
+              </a>
             ))}
           </nav>
 
            {/* Call to Action Button - Desktop */}
            <div className="hidden md:block">
-             <Link href="/contact" className="bg-accent text-dark-bg font-semibold py-2 px-4 rounded-lg hover:bg-opacity-80 transition-all duration-300 transform hover:scale-105">
-                Get a Quote
-             </Link>
+             <a href="/contact" className="inline-block text-white font-semibold py-3 px-6 rounded-lg text-base transition-all duration-300"
+                style={{
+                  background: 'linear-gradient(90deg, #00c6ff, #0072ff)',
+                  border: 'none',
+                  boxShadow: '0 0 10px rgba(0, 198, 255, 0.4)',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 198, 255, 0.7)')}
+                onMouseLeave={(e) => (e.currentTarget.style.boxShadow = '0 0 10px rgba(0, 198, 255, 0.4)')}
+             >
+               Get a Quote
+            </a>
            </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white focus:outline-none"
             >
               <span className="sr-only">Open main menu</span>
               {isOpen ? (
-                <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <svg className="h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
-                <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <svg className="h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
                 </svg>
               )}
@@ -70,28 +84,28 @@ const Header = () => {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+          <div className="px-2 pt-2 pb-3 space-y-2 sm:px-3">
             {navLinks.map((link) => (
-              <Link 
+              <a
                 key={link.name} 
                 href={link.href} 
-                className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-                // --- THIS IS THE CHANGE ---
-                // We've added this onClick event to close the menu
+                className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-3 rounded-md text-lg font-medium"
                 onClick={handleLinkClick}
               >
                 {link.name}
-              </Link>
+              </a>
             ))}
-             <div className="mt-4">
-              <Link 
+             <div className="mt-4 px-2">
+               <a
                 href="/contact" 
-                className="bg-accent text-dark-bg font-semibold py-2 px-4 rounded-lg hover:bg-opacity-80 transition-all duration-300 block text-center"
-                // Also adding it to the mobile "Get a Quote" button
+                className="block text-center w-full text-white font-semibold py-3 px-4 rounded-lg text-lg transition-all duration-300"
+                style={{
+                    background: 'linear-gradient(90deg, #00c6ff, #0072ff)',
+                }}
                 onClick={handleLinkClick}
               >
                   Get a Quote
-              </Link>
+              </a>
             </div>
           </div>
         </div>
@@ -101,3 +115,4 @@ const Header = () => {
 };
 
 export default Header;
+
