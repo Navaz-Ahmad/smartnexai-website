@@ -1,11 +1,11 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { useCallback } from "react";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
 import type { Engine } from "tsparticles-engine";
-import Image from 'next/image';
+// --- REMOVED: import Image from 'next/image'; ---
 
 // --- Animated Background Component ---
 const AnimatedBackground = () => {
@@ -48,11 +48,11 @@ const AnimatedBackground = () => {
 const TeamMember = ({ name, role, imageUrl }: { name: string; role: string; imageUrl: string }) => (
     <div className="text-center p-8 rounded-xl h-full" style={{background: 'rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.25)', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.35)'}}>
         <div className="relative w-32 h-32 mx-auto rounded-full overflow-hidden ring-4 ring-blue-500/50">
-            <Image 
+            {/* --- CHANGED: Replaced Next.js Image with a standard <img> tag to fix compile error --- */}
+            <img 
                 src={imageUrl} 
                 alt={name} 
-                fill 
-                className="object-cover" 
+                className="absolute top-0 left-0 w-full h-full object-cover" 
             />
         </div>
         <h3 className="mt-6 text-xl font-semibold text-white">{name}</h3>
@@ -62,8 +62,16 @@ const TeamMember = ({ name, role, imageUrl }: { name: string; role: string; imag
 
 // --- Main About Page Component ---
 export default function AboutPage() {
-    const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.2 } } };
-    const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } };
+    const containerVariants: Variants = { 
+        hidden: { opacity: 0 }, 
+        visible: { opacity: 1, transition: { staggerChildren: 0.2 } } 
+    };
+    
+    const itemVariants: Variants = { 
+        hidden: { y: 20, opacity: 0 }, 
+        visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } 
+    };
+
     const cardHoverEffect = { scale: 1.05, boxShadow: "0px 10px 30px -5px rgba(0, 0, 0, 0.3)", transition: { type: "spring", stiffness: 400, damping: 10 } };
 
     return (
@@ -198,3 +206,4 @@ export default function AboutPage() {
         </div>
     );
 }
+
