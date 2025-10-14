@@ -106,7 +106,7 @@ export default function ContactPage() {
                         className="mt-6 text-lg md:text-xl max-w-3xl mx-auto"
                         variants={itemVariants}
                     >
-                        Have a project in mind or just want to learn more? We'd love to hear from you.
+                        Have a project in mind or just want to learn more? We&apos;d love to hear from you.
                     </motion.p>
                 </div>
             </motion.section>
