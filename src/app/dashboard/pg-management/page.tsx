@@ -158,14 +158,14 @@ const PGManagementDashboard = () => {
               {isLoading ? <p>Loading admins...</p> : admins.length > 0 ? (
                 <ul className="space-y-3">
                   {admins.map(admin => (
-                    <li key={admin._id} className="p-4 bg-gray-800 rounded-md flex justify-between items-center">
-                      <div>
-                        <p className="font-semibold text-lg">{admin.name}</p>
-                        <p className="text-sm text-gray-400">{admin.email}</p>
+                    <li key={admin._id} className="p-4 bg-gray-800 rounded-md flex justify-between items-center gap-4">
+                      <div className="flex-grow min-w-0">
+                        <p className="font-semibold text-lg truncate">{admin.name}</p>
+                        <p className="text-sm text-gray-400 truncate">{admin.email}</p>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <button onClick={() => { setEditingAdmin(admin); setIsEditModalOpen(true); }} className="text-sm text-cyan-400 hover:text-cyan-300">Edit</button>
-                        <button onClick={() => { setDeletingAdmin(admin); setIsDeleteModalOpen(true); }} className="text-sm text-red-500 hover:text-red-400">Remove</button>
+                      <div className="flex-shrink-0 flex items-center gap-3">
+                        <button onClick={() => { setEditingAdmin(admin); setIsEditModalOpen(true); }} className="text-sm text-cyan-400 hover:text-cyan-300 font-medium">Edit</button>
+                        <button onClick={() => { setDeletingAdmin(admin); setIsDeleteModalOpen(true); }} className="text-sm text-red-500 hover:text-red-400 font-medium">Remove</button>
                       </div>
                     </li>
                   ))}
@@ -184,7 +184,7 @@ const PGManagementDashboard = () => {
                   <form onSubmit={handleUpdateAdmin} className="space-y-4">
                       <input type="text" value={editingAdmin.name} onChange={e => setEditingAdmin({...editingAdmin, name: e.target.value})} className="w-full bg-gray-700 p-2 rounded-md"/>
                       <input type="email" value={editingAdmin.email} onChange={e => setEditingAdmin({...editingAdmin, email: e.target.value})} className="w-full bg-gray-700 p-2 rounded-md"/>
-                      <input type="tel" value={editingAdmin.phone} onChange={e => setEditingAdmin({...editingAdmin, phone: e.target.value})} className="w-full bg-gray-700 p-2 rounded-md"/>
+                      <input type="tel" value={editingAdmin.phone ?? ''} onChange={e => setEditingAdmin({...editingAdmin, phone: e.target.value})} className="w-full bg-gray-700 p-2 rounded-md"/>
                       <div className="flex justify-end gap-4 mt-6">
                           <button type="button" onClick={() => setIsEditModalOpen(false)} className="py-2 px-4 rounded-lg bg-gray-600 hover:bg-gray-500">Cancel</button>
                           <button type="submit" className="py-2 px-4 rounded-lg text-white" style={{ background: 'linear-gradient(90deg, #00c6ff, #0072ff)' }}>Save Changes</button>
