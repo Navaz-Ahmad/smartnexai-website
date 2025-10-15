@@ -1,68 +1,110 @@
 import { NextResponse } from 'next/server';
-import { MongoClient } from 'mongodb'; // Import MongoClient for typing
-import { hashPassword } from '@/lib/auth';
-import * as dbModule from '@/lib/db'; // New: Import all exports as a module object
+import clientPromise from '@/lib/db';
+import { hash } from 'bcryptjs';
+import { ObjectId } from 'mongodb';
 
-// **FIX: Bypassing implicit 'any' error (TS7030) and respecting no-require-imports**
-// We use a namespace import (dbModule) and explicitly cast its default export
-// to the expected Promise<MongoClient> type. This satisfies both TypeScript and ESLint.
-const clientPromise: Promise<MongoClient> = dbModule.default as Promise<MongoClient>;
-
+// Function to CREATE a new Admin
 export async function POST(request: Request) {
   try {
-    // Note: TypeScript infers the type of request.json() to be 'any' here,
-    // but the error you are seeing is only related to clientPromise.
     const { name, email, phone, password, productKey } = await request.json();
 
-    // --- Basic Validation ---
     if (!name || !email || !password || !productKey) {
       return NextResponse.json({ message: 'Missing required fields.' }, { status: 400 });
     }
-    if (password.length < 6) {
-      return NextResponse.json({ message: 'Password must be at least 6 characters long.' }, { status: 400 });
-    }
 
-    // Await the correctly typed promise
     const client = await clientPromise;
     const db = client.db("smartnexai_db");
 
-    // 1. Check if the product exists
-    const product = await db.collection("products").findOne({ productKey: productKey });
-    if (!product) {
-        return NextResponse.json({ message: 'Invalid product specified.' }, { status: 400 });
-    }
-
-    // 2. Check if the user already exists
-    const existingUser = await db.collection("users").findOne({ email: email });
+    // Check if user already exists
+    const existingUser = await db.collection("users").findOne({ email });
     if (existingUser) {
-        return NextResponse.json({ message: 'An account with this email already exists.' }, { status: 422 });
+      return NextResponse.json({ message: 'An admin with this email already exists.' }, { status: 409 });
     }
-    
-    // 3. Hash the password
-    const hashedPassword = await hashPassword(password);
 
-    // 4. Create the new user document
-    const newUser = {
+    // Find the product to get its ID
+    const product = await db.collection("products").findOne({ productKey });
+    if (!product) {
+      return NextResponse.json({ message: 'Invalid product key provided.' }, { status: 400 });
+    }
+
+    const hashedPassword = await hash(password, 12);
+    const newAdmin = {
       name,
       email,
       phone,
       password: hashedPassword,
-      role: 'admin', // Set the role to 'admin'
-      assignedProducts: [product._id], // Assign the ID of the product
+      role: "admin",
+      assignedProducts: [product._id], // Assign the product's ObjectId
       createdAt: new Date(),
     };
 
-    // 5. Insert the new user
-    const result = await db.collection("users").insertOne(newUser);
+    await db.collection("users").insertOne(newAdmin);
+    return NextResponse.json({ message: 'Admin created successfully!' }, { status: 201 });
 
-    return NextResponse.json({ message: 'Admin user created successfully!', userId: result.insertedId }, { status: 201 });
-
-  } catch (error: unknown) { // Use unknown for safety
+  } catch (error) {
     console.error("Create Admin API Error:", error);
-    // Gracefully handle internal errors
-    let message = 'An internal server error occurred.';
-    if (error instanceof Error) message = error.message;
-
-    return NextResponse.json({ message }, { status: 500 });
+    return NextResponse.json({ message: "An internal server error occurred." }, { status: 500 });
   }
 }
+
+// Function to UPDATE an existing Admin
+export async function PUT(request: Request) {
+    try {
+        const { id, name, email, phone } = await request.json();
+
+        if (!id || !name || !email) {
+            return NextResponse.json({ message: 'Admin ID, name, and email are required.' }, { status: 400 });
+        }
+
+        const client = await clientPromise;
+        const db = client.db("smartnexai_db");
+
+        // Check if another user already has the new email
+        const existingUserWithEmail = await db.collection("users").findOne({ email, _id: { $ne: new ObjectId(id) } });
+        if (existingUserWithEmail) {
+            return NextResponse.json({ message: 'This email is already in use by another account.' }, { status: 409 });
+        }
+
+        const result = await db.collection("users").updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { name, email, phone } }
+        );
+
+        if (result.matchedCount === 0) {
+            return NextResponse.json({ message: 'Admin not found.' }, { status: 404 });
+        }
+
+        return NextResponse.json({ message: 'Admin updated successfully!' }, { status: 200 });
+
+    } catch (error) {
+        console.error("Update Admin API Error:", error);
+        return NextResponse.json({ message: "An internal server error occurred." }, { status: 500 });
+    }
+}
+
+// Function to DELETE an Admin
+export async function DELETE(request: Request) {
+    try {
+        const { id } = await request.json();
+        
+        if (!id) {
+            return NextResponse.json({ message: 'Admin ID is required.' }, { status: 400 });
+        }
+
+        const client = await clientPromise;
+        const db = client.db("smartnexai_db");
+
+        const result = await db.collection("users").deleteOne({ _id: new ObjectId(id) });
+
+        if (result.deletedCount === 0) {
+            return NextResponse.json({ message: 'Admin not found.' }, { status: 404 });
+        }
+
+        return NextResponse.json({ message: 'Admin removed successfully!' }, { status: 200 });
+
+    } catch (error) {
+        console.error("Delete Admin API Error:", error);
+        return NextResponse.json({ message: "An internal server error occurred." }, { status: 500 });
+    }
+}
+
