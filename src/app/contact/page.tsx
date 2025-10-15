@@ -1,13 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useCallback, useState } from "react"; // --- ADDED: useState for form
-// --- REVERTED IMPORTS TO FIX BUILD ERROR ---
+import { useCallback, useState } from "react";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
 import type { Engine } from "tsparticles-engine";
 
-// --- Animated Background Component ---
+// --- Animated Background Component (No changes needed here) ---
 const AnimatedBackground = () => {
     const particlesInit = useCallback(async (engine: Engine) => {
         await loadSlim(engine);
@@ -48,7 +47,6 @@ export default function ContactPage() {
     const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.2 } } };
     const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } };
     
-    // --- ADDED: State for form inputs ---
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -56,7 +54,10 @@ export default function ContactPage() {
         message: '',
     });
 
-    // --- ADDED: Handler for input changes ---
+    // --- ADDED: State for loading and submission status ---
+    const [isLoading, setIsLoading] = useState(false);
+    const [submissionStatus, setSubmissionStatus] = useState<{ message: string; type: 'success' | 'error' | null }>({ message: '', type: null });
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prevState => ({
@@ -65,14 +66,26 @@ export default function ContactPage() {
         }));
     };
     
-    // --- ADDED: Handler for form submission ---
+    // --- CHANGED: Updated handleSubmit with loading and status logic ---
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault(); // Prevents the default page reload
-        console.log("Form Submitted:", formData);
-        // Here you would typically send the formData to an API endpoint
-        alert("Thank you for your message! (See console for data)");
-        // Optionally reset form
-        setFormData({ name: '', email: '', subject: '', message: '' });
+        e.preventDefault();
+        setIsLoading(true);
+        setSubmissionStatus({ message: '', type: null }); // Clear previous status
+
+        // Simulate an API call
+        setTimeout(() => {
+            console.log("Form Submitted:", formData);
+            
+            // On successful submission:
+            setIsLoading(false);
+            setSubmissionStatus({ message: 'Thank you for your message! We will get back to you shortly.', type: 'success' });
+            setFormData({ name: '', email: '', subject: '', message: '' }); // Reset form
+
+            // Example of a failed submission:
+            // setIsLoading(false);
+            // setSubmissionStatus({ message: 'Something went wrong. Please try again.', type: 'error' });
+
+        }, 1500); // Simulate 1.5 second network delay
     };
 
     return (
@@ -106,7 +119,7 @@ export default function ContactPage() {
                         className="mt-6 text-lg md:text-xl max-w-3xl mx-auto"
                         variants={itemVariants}
                     >
-                        Have a project in mind or just want to learn more? We'd love to hear from you.
+                        Have a project in mind or just want to learn more? We&apos;d love to hear from you.
                     </motion.p>
                 </div>
             </motion.section>
@@ -125,7 +138,6 @@ export default function ContactPage() {
                         style={{background: 'rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.25)', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.35)'}}
                         variants={itemVariants}
                     >
-                        {/* --- FIXED: Added onSubmit handler --- */}
                         <form onSubmit={handleSubmit}>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Full Name Input */}
@@ -185,19 +197,30 @@ export default function ContactPage() {
                                 ></textarea>
                             </div>
                             
-                            {/* Submit Button */}
-                            <div className="mt-8 text-right">
+                            <div className="mt-8 flex items-center justify-between">
+                                {/* --- ADDED: Submission Status Message --- */}
+                                {submissionStatus.type && (
+                                     <div 
+                                        aria-live="polite" 
+                                        className={`text-sm font-semibold ${submissionStatus.type === 'success' ? 'text-green-400' : 'text-red-400'}`}
+                                    >
+                                         {submissionStatus.message}
+                                     </div>
+                                )}
+                                
+                                {/* --- CHANGED: Submit Button with Loading State --- */}
                                 <motion.button 
                                     type="submit" 
-                                    className="inline-block text-white font-semibold py-3 px-8 rounded-lg text-lg"
+                                    disabled={isLoading}
+                                    className="inline-block text-white font-semibold py-3 px-8 rounded-lg text-lg ml-auto disabled:opacity-50 disabled:cursor-not-allowed"
                                     style={{
                                         background: 'linear-gradient(90deg, #00c6ff, #0072ff)',
                                         boxShadow: '0 0 10px rgba(0, 198, 255, 0.4)',
                                     }}
-                                    whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 198, 255, 0.7)' }}
-                                    whileTap={{ scale: 0.95 }}
+                                    whileHover={{ scale: isLoading ? 1 : 1.05, boxShadow: isLoading ? '0 0 10px rgba(0, 198, 255, 0.4)' : '0 0 20px rgba(0, 198, 255, 0.7)' }}
+                                    whileTap={{ scale: isLoading ? 1 : 0.95 }}
                                 >
-                                    Send Message
+                                    {isLoading ? 'Sending...' : 'Send Message'}
                                 </motion.button>
                             </div>
                         </form>
@@ -207,4 +230,3 @@ export default function ContactPage() {
         </div>
     );
 }
-
