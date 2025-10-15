@@ -12,17 +12,22 @@ type Admin = {
   createdAt: string;
 };
 
+type Message = {
+  type: 'success' | 'error';
+  text: string;
+};
+
 const PGManagementDashboard = () => {
   // State for the form inputs
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  
+
   // State for feedback and data
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [message, setMessage] = useState<Message | null>(null);
 
   // Fetch existing admins when the component loads
   useEffect(() => {
@@ -32,16 +37,21 @@ const PGManagementDashboard = () => {
   const fetchProductAdmins = async () => {
     setIsLoading(true);
     try {
-      // We will create this API endpoint next
       const response = await fetch('/api/admins/pg-management');
       const data = await response.json();
+
       if (response.ok) {
         setAdmins(data.admins);
       } else {
         throw new Error(data.message || 'Failed to fetch admins');
       }
-    } catch (error: any) {
-      setMessage({ type: 'error', text: error.message });
+    } catch (error: unknown) {
+      // Narrow unknown type
+      if (error instanceof Error) {
+        setMessage({ type: 'error', text: error.message });
+      } else {
+        setMessage({ type: 'error', text: 'An unknown error occurred' });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -68,12 +78,16 @@ const PGManagementDashboard = () => {
         setEmail('');
         setPhone('');
         setPassword('');
-        fetchProductAdmins(); 
+        fetchProductAdmins();
       } else {
         throw new Error(data.message || 'Failed to create admin');
       }
-    } catch (error: any) {
-      setMessage({ type: 'error', text: error.message });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setMessage({ type: 'error', text: error.message });
+      } else {
+        setMessage({ type: 'error', text: 'An unknown error occurred' });
+      }
     }
   };
 
@@ -83,6 +97,7 @@ const PGManagementDashboard = () => {
         <Link href="/dashboard">
           <span className="text-cyan-400 hover:text-cyan-300 transition-colors mb-8 inline-block">&larr; Back to Main Dashboard</span>
         </Link>
+
         <h1 className="text-4xl font-bold mb-4" style={{ color: '#00c6ff' }}>
           PG Management
         </h1>
@@ -154,4 +169,3 @@ const PGManagementDashboard = () => {
 };
 
 export default PGManagementDashboard;
-

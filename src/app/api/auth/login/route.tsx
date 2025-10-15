@@ -3,6 +3,15 @@ import clientPromise from '@/lib/db';
 import { verifyPassword } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
 
+// --- Define a proper TypeScript type for the session object ---
+interface UserSession {
+  _id: ObjectId;
+  name: string;
+  email: string;
+  role: string;
+  productKey?: string; // optional, only for admins with products
+}
+
 export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
@@ -22,8 +31,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
     }
 
-    // Prepare the basic user session object, excluding the password
-    const userSession: { [key: string]: any } = {
+    // Create the session object using the interface
+    const userSession: UserSession = {
       _id: user._id,
       name: user.name,
       email: user.email,
@@ -31,15 +40,10 @@ export async function POST(request: Request) {
     };
 
     // --- ✨ NEW LOGIC: Fetch productKey for Admins ---
-    // If the user is an admin and has products assigned...
     if (user.role === 'admin' && user.assignedProducts && user.assignedProducts.length > 0) {
-      // Get the first assigned product's ID
       const firstProductId = user.assignedProducts[0];
-      
-      // Find that product in the 'products' collection
       const product = await db.collection("products").findOne({ _id: new ObjectId(firstProductId) });
 
-      // If the product is found, add its key to the session object
       if (product) {
         userSession.productKey = product.productKey;
       }

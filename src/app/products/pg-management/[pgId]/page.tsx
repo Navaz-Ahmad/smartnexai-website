@@ -11,33 +11,38 @@ type Tenant = {
   address: string;
 };
 
+type Message = {
+  type: 'success' | 'error';
+  text: string;
+};
+
 // This component receives params from Next.js for dynamic routes like [pgId]
 const ManagePgPage = ({ params }: { params: { pgId: string } }) => {
   const { pgId } = params;
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [message, setMessage] = useState<Message | null>(null);
 
-  // State for the new modals
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
 
-  // Form state for adding a new tenant
   const [tenantName, setTenantName] = useState('');
   const [tenantMobile, setTenantMobile] = useState('');
   const [tenantAddress, setTenantAddress] = useState('');
 
-  // Fetches the list of tenants for the current PG
   const fetchTenants = useCallback(async () => {
-    // No need to set loading true here as it's handled by the initial load
     try {
       const tenantsRes = await fetch(`/api/tenants?pgId=${pgId}`);
       if (!tenantsRes.ok) throw new Error('Failed to fetch tenants.');
       const tenantsData = await tenantsRes.json();
       setTenants(tenantsData.tenants);
-    } catch (error: any) {
-      setMessage({ type: 'error', text: error.message });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setMessage({ type: 'error', text: error.message });
+      } else {
+        setMessage({ type: 'error', text: 'An unknown error occurred' });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -47,76 +52,100 @@ const ManagePgPage = ({ params }: { params: { pgId: string } }) => {
     fetchTenants();
   }, [fetchTenants]);
 
-  // Handler to open the edit modal
   const handleOpenEditModal = (tenant: Tenant) => {
     setSelectedTenant(tenant);
     setIsEditModalOpen(true);
   };
 
-  // Handler to open the delete confirmation modal
   const handleOpenDeleteModal = (tenant: Tenant) => {
     setSelectedTenant(tenant);
     setIsDeleteModalOpen(true);
   };
-  
-  // Handles the form submission to ADD a new tenant
+
   const handleAddTenant = async (e: FormEvent) => {
     e.preventDefault();
     setMessage(null);
+
     try {
       const response = await fetch('/api/tenants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: tenantName, mobile: tenantMobile, address: tenantAddress, pgId }),
       });
+
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
+
+      if (!response.ok) throw new Error(data.message || 'Failed to add tenant');
 
       setMessage({ type: 'success', text: 'Tenant added successfully!' });
-      setTenantName(''); setTenantMobile(''); setTenantAddress('');
-      fetchTenants(); // Refresh list
-    } catch (error: any) {
-      setMessage({ type: 'error', text: error.message });
+      setTenantName('');
+      setTenantMobile('');
+      setTenantAddress('');
+      fetchTenants();
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setMessage({ type: 'error', text: error.message });
+      } else {
+        setMessage({ type: 'error', text: 'An unknown error occurred' });
+      }
     }
   };
 
-  // Handler to UPDATE an existing tenant
   const handleUpdateTenant = async (e: FormEvent) => {
     e.preventDefault();
     if (!selectedTenant) return;
+
     try {
       const response = await fetch('/api/tenants', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId: selectedTenant._id, name: selectedTenant.name, mobile: selectedTenant.mobile, address: selectedTenant.address }),
+        body: JSON.stringify({
+          tenantId: selectedTenant._id,
+          name: selectedTenant.name,
+          mobile: selectedTenant.mobile,
+          address: selectedTenant.address,
+        }),
       });
+
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
+
+      if (!response.ok) throw new Error(data.message || 'Failed to update tenant');
 
       setIsEditModalOpen(false);
-      fetchTenants(); // Refresh list
-    } catch (error: any) {
-      // Handle error display inside the modal or as a general message
-      console.error(error);
+      fetchTenants();
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setMessage({ type: 'error', text: error.message });
+      } else {
+        setMessage({ type: 'error', text: 'An unknown error occurred' });
+      }
     }
   };
 
-  // Handler to DELETE a tenant
   const handleDeleteTenant = async () => {
     if (!selectedTenant) return;
-    try {
-        const response = await fetch(`/api/tenants?tenantId=${selectedTenant._id}`, {
-            method: 'DELETE',
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message);
 
-        setIsDeleteModalOpen(false);
-        fetchTenants(); // Refresh list
-    } catch (error: any) {
-        console.error(error);
+    try {
+      const response = await fetch(`/api/tenants?tenantId=${selectedTenant._id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to delete tenant');
+
+      setIsDeleteModalOpen(false);
+      fetchTenants();
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setMessage({ type: 'error', text: error.message });
+      } else {
+        setMessage({ type: 'error', text: 'An unknown error occurred' });
+      }
     }
   };
+
+  
+
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
