@@ -1,37 +1,53 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/db';
+import { ObjectId, MongoClient } from 'mongodb';
 import { verifyPassword } from '@/lib/auth';
-import { ObjectId } from 'mongodb';
+import * as dbModule from '@/lib/db'; // Import all exports to type the client
 
-// --- Define a proper TypeScript type for the session object ---
+// Type the MongoDB client promise to remove implicit 'any'
+const clientPromise: Promise<MongoClient> = dbModule.default as Promise<MongoClient>;
+
+// --- TypeScript interfaces for better type safety ---
+interface User {
+  _id: ObjectId;
+  name: string;
+  email: string;
+  phone?: string;
+  password: string;
+  role: string;
+  assignedProducts: (ObjectId | string)[];
+}
+
 interface UserSession {
   _id: ObjectId;
   name: string;
   email: string;
   role: string;
-  productKey?: string; // optional, only for admins with products
+  productKey?: string; // optional, only for admins
 }
 
 export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
 
+    if (!email || !password) {
+      return NextResponse.json({ message: 'Missing email or password.' }, { status: 400 });
+    }
+
     const client = await clientPromise;
     const db = client.db("smartnexai_db");
 
-    const user = await db.collection("users").findOne({ email: email });
+    // Fetch the user and cast to User interface
+    const user = await db.collection<User>("users").findOne({ email });
 
     if (!user) {
       return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
     }
 
     const passwordsMatch = await verifyPassword(password, user.password);
-
     if (!passwordsMatch) {
       return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
     }
 
-    // Create the session object using the interface
     const userSession: UserSession = {
       _id: user._id,
       name: user.name,
@@ -39,27 +55,25 @@ export async function POST(request: Request) {
       role: user.role,
     };
 
-    // --- ✨ NEW LOGIC: Fetch productKey for Admins ---
-    if (user.role === 'admin' && user.assignedProducts && user.assignedProducts.length > 0) {
-      const firstProductId = user.assignedProducts[0];
-      const product = await db.collection("products").findOne({ _id: new ObjectId(firstProductId) });
+    // Fetch productKey if admin has assigned products
+    if (user.role === 'admin' && user.assignedProducts?.length > 0) {
+      const firstProductId = typeof user.assignedProducts[0] === 'string'
+        ? new ObjectId(user.assignedProducts[0])
+        : user.assignedProducts[0];
 
+      const product = await db.collection("products").findOne({ _id: firstProductId });
       if (product) {
         userSession.productKey = product.productKey;
       }
     }
-    // --- End of New Logic ---
 
-    return NextResponse.json(
-      { message: "Login successful!", user: userSession },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Login successful!", user: userSession }, { status: 200 });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Login API error:", error);
-    return NextResponse.json(
-      { message: "An internal server error occurred." },
-      { status: 500 }
-    );
+    let message = "An internal server error occurred.";
+    if (error instanceof Error) message = error.message;
+
+    return NextResponse.json({ message }, { status: 500 });
   }
 }

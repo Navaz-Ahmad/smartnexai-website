@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-// Import the value, but we'll cast it to a type-safe variable below
-import _clientPromise from '@/lib/db'; 
 import { MongoClient } from 'mongodb'; // Ensure MongoClient is imported
+import * as dbModule from '@/lib/db'; // New: Import all exports as a module object
 
 const PRODUCT_KEY = 'pg-management';
 
-// Explicitly cast the imported clientPromise to its expected type 
-// (Promise<MongoClient>) to resolve the "implicitly has type 'any'" error (TS7030).
-const clientPromise = _clientPromise as Promise<MongoClient>;
+// **FIX: Bypassing implicit 'any' error (TS7030) and respecting no-require-imports**
+// We use a namespace import (dbModule) and explicitly cast its default export
+// to the expected Promise<MongoClient> type. This satisfies both TypeScript and ESLint.
+const clientPromise: Promise<MongoClient> = dbModule.default as Promise<MongoClient>;
 
 export async function GET() {
   try {
@@ -22,6 +22,7 @@ export async function GET() {
     }
     
     // Use the retrieved product ID for the lookup
+    // Assuming product is not null here due to the check above
     const assignedProductId = product._id;
 
     // 2. Find all users who have this product's ID in their 'assignedProducts' array

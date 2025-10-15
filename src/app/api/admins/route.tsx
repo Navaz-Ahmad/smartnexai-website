@@ -1,9 +1,17 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/db';
+import { MongoClient } from 'mongodb'; // Import MongoClient for typing
 import { hashPassword } from '@/lib/auth';
+import * as dbModule from '@/lib/db'; // New: Import all exports as a module object
+
+// **FIX: Bypassing implicit 'any' error (TS7030) and respecting no-require-imports**
+// We use a namespace import (dbModule) and explicitly cast its default export
+// to the expected Promise<MongoClient> type. This satisfies both TypeScript and ESLint.
+const clientPromise: Promise<MongoClient> = dbModule.default as Promise<MongoClient>;
 
 export async function POST(request: Request) {
   try {
+    // Note: TypeScript infers the type of request.json() to be 'any' here,
+    // but the error you are seeing is only related to clientPromise.
     const { name, email, phone, password, productKey } = await request.json();
 
     // --- Basic Validation ---
@@ -14,6 +22,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Password must be at least 6 characters long.' }, { status: 400 });
     }
 
+    // Await the correctly typed promise
     const client = await clientPromise;
     const db = client.db("smartnexai_db");
 
@@ -48,8 +57,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: 'Admin user created successfully!', userId: result.insertedId }, { status: 201 });
 
-  } catch (error) {
+  } catch (error: unknown) { // Use unknown for safety
     console.error("Create Admin API Error:", error);
-    return NextResponse.json({ message: "An internal server error occurred." }, { status: 500 });
+    // Gracefully handle internal errors
+    let message = 'An internal server error occurred.';
+    if (error instanceof Error) message = error.message;
+
+    return NextResponse.json({ message }, { status: 500 });
   }
 }
