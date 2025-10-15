@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { useCallback } from "react";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
@@ -43,7 +43,7 @@ const AnimatedBackground = () => {
     );
 };
 
-// Updated ServiceCard to match the glassmorphic design
+// ServiceCard Component (glassmorphic design)
 const ServiceCard = ({ title, description, iconPath }: { title: string, description: string, iconPath: string }) => (
     <motion.div
         className="p-8 rounded-xl flex flex-col"
@@ -56,7 +56,7 @@ const ServiceCard = ({ title, description, iconPath }: { title: string, descript
         variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
         whileHover={{ scale: 1.05, transition: { type: "spring", stiffness: 400, damping: 10 } }}
     >
-        <svg className="w-10 h-10 mb-4" style={{color: '#00c6ff'}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-10 h-10 mb-4" style={{ color: '#00c6ff' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={iconPath} />
         </svg>
         <h3 className="text-2xl font-bold text-white">{title}</h3>
@@ -65,8 +65,15 @@ const ServiceCard = ({ title, description, iconPath }: { title: string, descript
 );
 
 export default function ServicesPage() {
-    const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.2 } } };
-    const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } };
+    const containerVariants: Variants = { 
+        hidden: { opacity: 0 }, 
+        visible: { opacity: 1, transition: { staggerChildren: 0.2 } } 
+    };
+
+    const itemVariants: Variants = { 
+        hidden: { y: 20, opacity: 0 }, 
+        visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } 
+    };
 
     return (
         <div style={{ fontFamily: "'Poppins', sans-serif" }} className="overflow-x-hidden">
@@ -99,7 +106,7 @@ export default function ServicesPage() {
                         className="mt-6 text-lg md:text-xl max-w-3xl mx-auto"
                         variants={itemVariants}
                     >
-                        We provide a comprehensive suite of AI services designed to solve your most complex problems and drive business value.
+                        We offer cutting-edge AI and automation solutions for businesses, educational institutions, and industries to streamline operations, increase productivity, and drive growth.
                     </motion.p>
                 </div>
             </motion.section>
@@ -114,36 +121,43 @@ export default function ServicesPage() {
             >
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
                         <ServiceCard
-                            title="Custom ML Models"
-                            description="Development of bespoke machine learning models tailored to your specific data and business objectives, from predictive analytics to computer vision."
-                            iconPath="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                            title="College, Mess & PG Automation"
+                            description="Comprehensive platforms for student, mess, and PG management, including attendance, billing, communication, and reporting."
+                            iconPath="M3 7h18M3 12h18M3 17h18"
                         />
+
+                        <ServiceCard
+                            title="Computer Vision Attendance Tracking"
+                            description="AI-powered camera systems to automatically track attendance in schools, colleges, offices, or industries."
+                            iconPath="M12 8c-1.105 0-2 .895-2 2s.895 2 2 2 2-.895 2-2-.895-2-2-2z M12 14c-2.667 0-8 1.333-8 4v2h16v-2c0-2.667-5.333-4-8-4z"
+                        />
+
                         <ServiceCard
                             title="AI-Powered Analytics"
-                            description="Unlock deep insights from your data. Our advanced analytics platform uses AI to identify trends, predict outcomes, and provide actionable intelligence."
-                            iconPath="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                            description="Transform your raw data into actionable insights using predictive models and AI-driven reporting tools."
+                            iconPath="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z"
                         />
+
                         <ServiceCard
-                            title="Natural Language Processing"
-                            description="Leverage our NLP solutions for sentiment analysis, text summarization, chatbots, and language understanding to enhance customer interaction and automate tasks."
-                            iconPath="M3 5h12M9 3v2m4 13h4l-4-4H9a2 2 0 01-2-2V7a2 2 0 012-2h6"
+                            title="Custom AI Solutions"
+                            description="Have a challenge or idea? Our experts design bespoke solutions tailored to your business requirements."
+                            iconPath="M12 6V4m0 16v-2M6 12H2m20 0h-4"
                         />
+
                         <ServiceCard
-                            title="AI Strategy Consulting"
-                            description="Work with our experts to develop a roadmap for AI integration. We help you identify opportunities, assess feasibility, and plan for successful implementation."
-                            iconPath="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                            title="Automation & Workflow Optimization"
+                            description="Streamline repetitive processes and boost operational efficiency with intelligent automation tools."
+                            iconPath="M4 4h16v16H4z"
                         />
+
                         <ServiceCard
-                            title="Data Engineering"
-                            description="Building robust data pipelines and infrastructure to ensure your AI models are fed with clean, reliable, and real-time data for optimal performance."
-                            iconPath="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7l8-4 8 4"
+                            title="Coming Soon: Innovative Tools"
+                            description="We continuously innovate to deliver new AI and automation products that cater to your evolving needs."
+                            iconPath="M12 2l3 7H9l3-7z"
                         />
-                        <ServiceCard
-                            title="Automation Solutions"
-                            description="Implement intelligent automation to streamline business processes, reduce operational costs, and free up your team to focus on high-value work."
-                            iconPath="M12 6V4m0 16v-2m8-8h-2M4 12H2m15.364 6.364l-1.414-1.414M6.05 6.05l-1.414-1.414m12.728 0l-1.414 1.414M6.05 17.95l-1.414 1.414"
-                        />
+
                     </div>
                 </div>
             </motion.section>

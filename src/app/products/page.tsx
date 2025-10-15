@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { useCallback } from "react";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
@@ -43,43 +43,60 @@ const AnimatedBackground = () => {
     );
 };
 
-// ProductCard Component with new styling
-const ProductCard = ({ title, description, version }: { title: string, description: string, version: string }) => (
-  <motion.div 
-    className="p-8 rounded-xl flex flex-col" 
-    style={{
-        background: 'rgba(255, 255, 255, 0.12)', 
-        backdropFilter: 'blur(12px)', 
-        border: '1px solid rgba(255, 255, 255, 0.25)', 
-        boxShadow: '0 4px 30px rgba(0, 0, 0, 0.35)'
-    }}
-    variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
-    whileHover={{ scale: 1.05, transition: { type: "spring", stiffness: 400, damping: 10 } }}
-  >
-    <div className="flex-grow">
-      <div className="flex justify-between items-center">
-        <h3 className="text-2xl font-bold text-white">{title}</h3>
-        <span 
-            className="text-xs font-semibold px-3 py-1 rounded-full"
-            style={{backgroundColor: 'rgba(0, 198, 255, 0.2)', color: '#00c6ff'}}
-        >
-            {version}
-        </span>
-      </div>
-      <p className="mt-4 text-neutral-300 text-base">{description}</p>
-    </div>
-    <div className="mt-6">
-      <a href="/contact" className="font-semibold text-lg transition-colors duration-300" style={{color: '#00c6ff'}}>
-        Request a Demo &rarr;
-      </a>
-    </div>
-  </motion.div>
+// ProductCard Component
+const ProductCard = ({
+    title,
+    description,
+    version,
+    isCustom = false
+}: { title: string, description: string, version: string, isCustom?: boolean }) => (
+    <motion.div 
+        className="p-8 rounded-xl flex flex-col" 
+        style={{
+            background: 'rgba(255, 255, 255, 0.12)', 
+            backdropFilter: 'blur(12px)', 
+            border: '1px solid rgba(255, 255, 255, 0.25)', 
+            boxShadow: '0 4px 30px rgba(0, 0, 0, 0.35)'
+        }}
+        variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
+        whileHover={{ scale: 1.05, transition: { type: "spring", stiffness: 400, damping: 10 } }}
+    >
+        <div className="flex-grow">
+            <div className="flex justify-between items-center">
+                <h3 className="text-2xl font-bold text-white">{title}</h3>
+                <span 
+                    className="text-xs font-semibold px-3 py-1 rounded-full"
+                    style={{backgroundColor: 'rgba(0, 198, 255, 0.2)', color: '#00c6ff'}}
+                >
+                    {version}
+                </span>
+            </div>
+            <p className="mt-4 text-neutral-300 text-base">{description}</p>
+        </div>
+        <div className="mt-6">
+            {isCustom ? (
+                <a href="/contact" className="font-semibold text-lg transition-colors duration-300" style={{color: '#00c6ff'}}>
+                    Contact Us &rarr;
+                </a>
+            ) : (
+                <a href="/contact" className="font-semibold text-lg transition-colors duration-300" style={{color: '#00c6ff'}}>
+                    Request a Demo &rarr;
+                </a>
+            )}
+        </div>
+    </motion.div>
 );
 
-
 export default function ProductsPage() {
-    const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.2 } } };
-    const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } };
+    const containerVariants: Variants = { 
+        hidden: { opacity: 0 }, 
+        visible: { opacity: 1, transition: { staggerChildren: 0.2 } } 
+    };
+
+    const itemVariants: Variants = { 
+        hidden: { y: 20, opacity: 0 }, 
+        visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } 
+    };
 
     return (
         <div style={{ fontFamily: "'Poppins', sans-serif" }} className="overflow-x-hidden">
@@ -112,7 +129,7 @@ export default function ProductsPage() {
                         className="mt-6 text-lg md:text-xl max-w-3xl mx-auto"
                         variants={itemVariants}
                     >
-                        Proprietary AI platforms designed for performance, scalability, and ease of use.
+                        Automation solutions for education, mess, PG management, and industry operations, designed for efficiency and scalability.
                     </motion.p>
                 </div>
             </motion.section>
@@ -128,24 +145,40 @@ export default function ProductsPage() {
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <ProductCard 
-                            title="NexusFlow AI" 
-                            description="An end-to-end MLOps platform that simplifies the entire machine learning lifecycle, from data preparation and model training to deployment and monitoring."
+                            title="College Management System" 
+                            description="A comprehensive platform to manage student records, attendance, timetable, exams, and communication with faculty and parents."
+                            version="v3.0"
+                        />
+                        <ProductCard 
+                            title="Mess Management System" 
+                            description="Automate menu planning, billing, inventory, and attendance for mess and canteen operations, ensuring smooth daily management."
                             version="v2.5"
                         />
                         <ProductCard 
-                            title="CogniSynth Platform" 
-                            description="A powerful generative AI suite for creating high-quality text, code, and images. Perfect for content creation, software development, and design automation."
-                            version="v1.8"
-                        />
-                        <ProductCard 
-                            title="PredictivePulse" 
-                            description="Our flagship predictive analytics tool that provides highly accurate forecasts for sales, customer churn, and market trends, helping you make data-driven decisions."
-                            version="v3.2"
-                        />
-                        <ProductCard 
-                            title="VisionGuard" 
-                            description="An advanced computer vision solution for real-time object detection, facial recognition, and quality control in manufacturing and security applications."
+                            title="PG Management System" 
+                            description="Efficiently manage room allocation, occupancy, billing, and resident communications in hostels, PGs, or dormitories."
                             version="v4.1"
+                        />
+                        <ProductCard 
+                            title="Automation Suite for Institutions" 
+                            description="Integrate college, mess, and PG management into a single dashboard for real-time insights, notifications, and reporting."
+                            version="v1.9"
+                        />
+                        <ProductCard 
+                            title="Computer Vision-based Automated Attendance Tracking" 
+                            description="Leverage AI and camera-based recognition to automatically track attendance for employees or students in any industry or institution."
+                            version="v1.0"
+                        />
+                        <ProductCard 
+                            title="Coming Soon: Industry-Specific Automation Tools" 
+                            description="We are continuously innovating to bring more solutions tailored to your business needs. Stay tuned for upcoming products!"
+                            version="—"
+                        />
+                        <ProductCard 
+                            title="Custom Solutions: Your Ideas, Our Expertise" 
+                            description="Have a problem you want solved? Share your ideas with us and we will build a custom solution to streamline your operations."
+                            version="—"
+                            isCustom={true} // ✅ Custom card shows Contact Us
                         />
                     </div>
                 </div>

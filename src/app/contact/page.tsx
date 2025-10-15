@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion"; // ✅ 1. IMPORT the Variants type
 import { useCallback, useState } from "react";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
@@ -44,8 +44,17 @@ const AnimatedBackground = () => {
 };
 
 export default function ContactPage() {
-    const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.2 } } };
-    const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } };
+    // ✅ 2. APPLY the Variants type
+    const containerVariants: Variants = { 
+        hidden: { opacity: 0 }, 
+        visible: { opacity: 1, transition: { staggerChildren: 0.2 } } 
+    };
+    
+    // ✅ 3. APPLY the Variants type (This is the one causing the error)
+    const itemVariants: Variants = { 
+        hidden: { y: 20, opacity: 0 }, 
+        visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } 
+    };
     
     const [formData, setFormData] = useState({
         name: '',
@@ -54,7 +63,6 @@ export default function ContactPage() {
         message: '',
     });
 
-    // --- ADDED: State for loading and submission status ---
     const [isLoading, setIsLoading] = useState(false);
     const [submissionStatus, setSubmissionStatus] = useState<{ message: string; type: 'success' | 'error' | null }>({ message: '', type: null });
 
@@ -66,26 +74,19 @@ export default function ContactPage() {
         }));
     };
     
-    // --- CHANGED: Updated handleSubmit with loading and status logic ---
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
-        setSubmissionStatus({ message: '', type: null }); // Clear previous status
+        setSubmissionStatus({ message: '', type: null });
 
-        // Simulate an API call
         setTimeout(() => {
             console.log("Form Submitted:", formData);
             
-            // On successful submission:
             setIsLoading(false);
             setSubmissionStatus({ message: 'Thank you for your message! We will get back to you shortly.', type: 'success' });
-            setFormData({ name: '', email: '', subject: '', message: '' }); // Reset form
+            setFormData({ name: '', email: '', subject: '', message: '' });
 
-            // Example of a failed submission:
-            // setIsLoading(false);
-            // setSubmissionStatus({ message: 'Something went wrong. Please try again.', type: 'error' });
-
-        }, 1500); // Simulate 1.5 second network delay
+        }, 1500);
     };
 
     return (
@@ -198,17 +199,17 @@ export default function ContactPage() {
                             </div>
                             
                             <div className="mt-8 flex items-center justify-between">
-                                {/* --- ADDED: Submission Status Message --- */}
+                                {/* Submission Status Message */}
                                 {submissionStatus.type && (
-                                     <div 
+                                    <div 
                                         aria-live="polite" 
                                         className={`text-sm font-semibold ${submissionStatus.type === 'success' ? 'text-green-400' : 'text-red-400'}`}
                                     >
-                                         {submissionStatus.message}
-                                     </div>
+                                        {submissionStatus.message}
+                                    </div>
                                 )}
                                 
-                                {/* --- CHANGED: Submit Button with Loading State --- */}
+                                {/* Submit Button with Loading State */}
                                 <motion.button 
                                     type="submit" 
                                     disabled={isLoading}

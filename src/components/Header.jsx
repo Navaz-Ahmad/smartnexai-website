@@ -45,20 +45,20 @@ const Header = () => {
             ))}
           </nav>
 
-           {/* Call to Action Button - Desktop */}
-           <div className="hidden md:block">
-             <a href="/contact" className="inline-block text-white font-semibold py-3 px-6 rounded-lg text-base transition-all duration-300"
-                style={{
-                  background: 'linear-gradient(90deg, #00c6ff, #0072ff)',
-                  border: 'none',
-                  boxShadow: '0 0 10px rgba(0, 198, 255, 0.4)',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 198, 255, 0.7)')}
-                onMouseLeave={(e) => (e.currentTarget.style.boxShadow = '0 0 10px rgba(0, 198, 255, 0.4)')}
-             >
-               Get a Quote
+          {/* Login Button - Desktop */}
+          <div className="hidden md:block">
+            <a href="/login" className="inline-block text-white font-semibold py-3 px-8 rounded-lg text-base transition-all duration-300"
+               style={{
+                 background: 'linear-gradient(90deg, #00c6ff, #0072ff)',
+                 border: 'none',
+                 boxShadow: '0 0 10px rgba(0, 198, 255, 0.4)',
+               }}
+               onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 198, 255, 0.7)')}
+               onMouseLeave={(e) => (e.currentTarget.style.boxShadow = '0 0 10px rgba(0, 198, 255, 0.4)')}
+            >
+              Login
             </a>
-           </div>
+          </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center">
@@ -95,16 +95,16 @@ const Header = () => {
                 {link.name}
               </a>
             ))}
-             <div className="mt-4 px-2">
-               <a
-                href="/contact" 
+            <div className="mt-4 px-2">
+              <a
+                href="/login" 
                 className="block text-center w-full text-white font-semibold py-3 px-4 rounded-lg text-lg transition-all duration-300"
                 style={{
                     background: 'linear-gradient(90deg, #00c6ff, #0072ff)',
                 }}
                 onClick={handleLinkClick}
               >
-                  Get a Quote
+                Login
               </a>
             </div>
           </div>
@@ -115,4 +115,3 @@ const Header = () => {
 };
 
 export default Header;
-

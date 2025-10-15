@@ -43,32 +43,7 @@ const AnimatedBackground = () => {
     );
 };
 
-// --- Team Member Helper Component ---
-const TeamMember = ({ name, role, imageUrl }: { name: string; role: string; imageUrl: string }) => (
-    <div
-        className="text-center p-8 rounded-xl h-full"
-        style={{
-            background: 'rgba(255, 255, 255, 0.12)',
-            backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255, 255, 255, 0.25)',
-            boxShadow: '0 4px 30px rgba(0, 0, 0, 0.35)',
-        }}
-    >
-        <div className="relative w-32 h-32 mx-auto rounded-full overflow-hidden ring-4 ring-blue-500/50">
-            <img
-                src={imageUrl}
-                alt={name}
-                className="absolute top-0 left-0 w-full h-full object-cover"
-            />
-        </div>
-        <h3 className="mt-6 text-xl font-semibold text-white">{name}</h3>
-        <p style={{ color: '#00c6ff' }} className="font-medium text-lg">
-            {role}
-        </p>
-    </div>
-);
-
-// --- Main About Page Component ---
+// --- Main Dashboard Page ---
 export default function AboutPage() {
     const containerVariants: Variants = {
         hidden: { opacity: 0 },
@@ -89,6 +64,13 @@ export default function AboutPage() {
             damping: 10,
         },
     };
+
+    const benefits = [
+        { title: "Cutting-edge AI", description: "Leverage advanced AI models to solve complex business problems.", icon: "🤖" },
+        { title: "Custom Solutions", description: "Tailor-made solutions designed for your unique business needs.", icon: "🛠️" },
+        { title: "Scalable Infrastructure", description: "Grow seamlessly with systems built for efficiency and performance.", icon: "📈" },
+        { title: "Global Expertise", description: "Work with a team of world-class AI researchers and engineers.", icon: "🌎" },
+    ];
 
     return (
         <div
@@ -153,7 +135,7 @@ export default function AboutPage() {
                     >
                         <h2 className="text-3xl font-bold text-white">Our Mission</h2>
                         <p className="mt-4 text-neutral-300 text-lg">
-                            To empower businesses across the globe by providing accessible, cutting-edge AI technologies. We strive to create intelligent systems that drive efficiency, foster innovation, and unlock new opportunities for growth, making the future of AI a present reality for our clients.
+                            To empower businesses across the globe by providing accessible, cutting-edge AI technologies. We strive to create intelligent systems that drive efficiency, foster innovation, and unlock new opportunities for growth.
                         </p>
                     </motion.div>
 
@@ -176,9 +158,9 @@ export default function AboutPage() {
                 </motion.div>
             </section>
 
-            {/* Team Section */}
+            {/* Why Choose SmartNex.ai Section */}
             <section className="py-20 relative z-10">
-                <div className="container mx-auto px-4 text-center">
+                <div className="container mx-auto px-6 text-center">
                     <motion.h2
                         className="text-3xl md:text-4xl font-bold text-white"
                         initial={{ opacity: 0, y: 20 }}
@@ -186,7 +168,7 @@ export default function AboutPage() {
                         viewport={{ once: true, amount: 0.5 }}
                         transition={{ duration: 0.5 }}
                     >
-                        Meet Our Team
+                        Why Choose SmartNex.ai?
                     </motion.h2>
                     <motion.div
                         className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
@@ -195,34 +177,24 @@ export default function AboutPage() {
                         variants={containerVariants}
                         viewport={{ once: true, amount: 0.2 }}
                     >
-                        <motion.div variants={itemVariants} whileHover={cardHoverEffect}>
-                            <TeamMember
-                                name="Dr. Evelyn Reed"
-                                role="Founder & CEO"
-                                imageUrl="https://placehold.co/200x200/00c6ff/FFFFFF?text=ER"
-                            />
-                        </motion.div>
-                        <motion.div variants={itemVariants} whileHover={cardHoverEffect}>
-                            <TeamMember
-                                name="Marcus Chen"
-                                role="Chief Technology Officer"
-                                imageUrl="https://placehold.co/200x200/00c6ff/FFFFFF?text=MC"
-                            />
-                        </motion.div>
-                        <motion.div variants={itemVariants} whileHover={cardHoverEffect}>
-                            <TeamMember
-                                name="Alina Petrova"
-                                role="Head of Research"
-                                imageUrl="https://placehold.co/200x200/00c6ff/FFFFFF?text=AP"
-                            />
-                        </motion.div>
-                        <motion.div variants={itemVariants} whileHover={cardHoverEffect}>
-                            <TeamMember
-                                name="Kenji Tanaka"
-                                role="Lead AI Engineer"
-                                imageUrl="https://placehold.co/200x200/00c6ff/FFFFFF?text=KT"
-                            />
-                        </motion.div>
+                        {benefits.map((benefit, i) => (
+                            <motion.div
+                                key={i}
+                                variants={itemVariants}
+                                whileHover={cardHoverEffect}
+                                className="p-8 rounded-xl"
+                                style={{
+                                    background: "rgba(255, 255, 255, 0.12)",
+                                    backdropFilter: "blur(12px)",
+                                    border: "1px solid rgba(255, 255, 255, 0.25)",
+                                    boxShadow: "0 4px 30px rgba(0, 0, 0, 0.35)",
+                                }}
+                            >
+                                <div className="text-5xl mb-4">{benefit.icon}</div>
+                                <h3 className="text-xl font-semibold text-white">{benefit.title}</h3>
+                                <p className="mt-2 text-neutral-300">{benefit.description}</p>
+                            </motion.div>
+                        ))}
                     </motion.div>
                 </div>
             </section>
@@ -249,7 +221,6 @@ export default function AboutPage() {
                                 Ready to Transform Your Business?
                             </h2>
                             <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-neutral-300">
-                                {/* THIS IS THE FIX 👇 */}
                                 Let&apos;s discuss how SmartNex.ai can become your innovation partner. Connect with our experts today for a free consultation.
                             </p>
                             <motion.div
