@@ -129,7 +129,8 @@ export default function Home() {
                             color: '#00c6ff',
                             textShadow: '0 0 20px rgba(0, 198, 255, 0.8)',
                         }}
-                        className="text-5xl md:text-7xl font-extrabold leading-tight"
+                        // UPDATED: Adjusted text sizes for different screen widths
+                        className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight"
                         variants={itemVariants}
                     >
                         AI-Driven Solutions for Modern Businesses
