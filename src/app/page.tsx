@@ -112,14 +112,17 @@ export default function Home() {
 
     return (
         <div style={{ fontFamily: "'Poppins', sans-serif" }} className="text-neutral-800 dark:text-neutral-200 overflow-x-hidden">
+            
             <AnimatedBackground />
 
             {/* Hero Section */}
             <motion.section 
-                className="py-24 md:py-40 text-center relative z-10"
+                className="pt-48 pb-24 md:pt-64 md:pb-40 text-center relative z-10"
                 initial="hidden"
                 animate="visible"
                 variants={containerVariants}
+            
+            
             >
                 <div className="container mx-auto px-6">
                     <motion.h1 
@@ -138,7 +141,7 @@ export default function Home() {
                     <motion.p 
                         style={{
                             fontWeight: '500',
-                            color: '#ffffffdd',
+                            color: '#ffffffdd', 
                             textShadow: '0 0 8px rgba(255, 255, 255, 0.4)',
                         }}
                         className="mt-6 text-lg md:text-xl max-w-3xl mx-auto"

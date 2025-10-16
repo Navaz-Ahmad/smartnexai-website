@@ -1,6 +1,7 @@
 'use client'; 
 
 import { useState } from 'react';
+import Image from 'next/image'; // Make sure to import the Image component
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +14,7 @@ const Header = () => {
     { name: 'Contact Us', href: '/contact' },
   ];
 
-  // A new function to handle closing the menu
+  // A function to handle closing the mobile menu when a link is clicked
   const handleLinkClick = () => {
     setIsOpen(false);
   };
@@ -28,18 +29,25 @@ const Header = () => {
         }}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo */}
+        <div className="flex items-center justify-between h-30">
+          
+          {/* Logo Section - REPLACED TEXT WITH IMAGE */}
           <div className="flex-shrink-0">
-            <a href="/" className="text-3xl font-bold" style={{color: '#00c6ff', textShadow: '0 0 20px rgba(0, 198, 255, 0.7)'}}>
-              SmartNex.ai
+            <a href="/">
+              <Image
+                  src="/assets/logo.png" // Assumes your logo is at public/assets/logo.png
+                  alt="SmartNex AI Logo"
+                  width={250}   // Adjusted width for a navbar
+                  height={100}  // Adjusted height to maintain aspect ratio
+                  priority     // Ensures the logo loads quickly
+              />
             </a>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex md:items-center md:space-x-8">
             {navLinks.map((link) => (
-              <a key={link.name} href={link.href} className="text-lg font-medium text-gray-300 hover:text-white transition-colors duration-300">
+              <a key={link.name} href={link.href} className="text-2xl font-medium text-gray-300 hover:text-white transition-colors duration-300">
                 {link.name}
               </a>
             ))}
@@ -47,7 +55,7 @@ const Header = () => {
 
           {/* Login Button - Desktop */}
           <div className="hidden md:block">
-            <a href="/login" className="inline-block text-white font-semibold py-3 px-8 rounded-lg text-base transition-all duration-300"
+            <a href="/login" className="inline-block text-white font-semibold py-3 px-8 rounded-lg text-2xl transition-all duration-300"
                style={{
                  background: 'linear-gradient(90deg, #00c6ff, #0072ff)',
                  border: 'none',
