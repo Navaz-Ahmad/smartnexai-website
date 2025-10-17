@@ -23,7 +23,7 @@ const Header = () => {
     <header 
         className="sticky top-0 z-50"
         style={{
-            background: 'rgba(13, 27, 42, 0.85)', 
+            background: 'rgba(13, 27, 42)', 
             backdropFilter: 'blur(12px)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
         }}
