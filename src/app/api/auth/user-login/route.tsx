@@ -1,42 +1,42 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/db';
-import { ObjectId } from 'mongodb';
+import { connectToDatabase } from '@/lib/db';
+import { compare } from 'bcryptjs';
+// **THE FIX IS HERE: The unused 'ObjectId' import has been removed.**
+
+const pgDbUri = process.env.MONGODB_URI_PG!;
 
 export async function POST(request: Request) {
   try {
-    const { mobile } = await request.json();
+    const { mobile, password } = await request.json();
 
-    if (!mobile) {
-      return NextResponse.json({ message: 'Mobile number is required.' }, { status: 400 });
+    if (!mobile || !password) {
+      return NextResponse.json({ message: 'Mobile number and password are required.' }, { status: 400 });
     }
 
-    const client = await clientPromise;
-    const db = client.db("smartnexai_db");
+    const client = await connectToDatabase(pgDbUri);
+    const db = client.db();
 
     const tenant = await db.collection("tenants").findOne({ mobile });
-
     if (!tenant) {
-      return NextResponse.json({ message: 'No account found with this mobile number.' }, { status: 404 });
+      return NextResponse.json({ message: 'Invalid credentials.' }, { status: 401 });
     }
 
-    const pg = await db.collection("pgs").findOne({ _id: new ObjectId(tenant.pgId) });
-
-    if (!pg) {
-      return NextResponse.json({ message: 'Assigned PG not found. Please contact your PG manager.' }, { status: 404 });
+    const passwordsMatch = await compare(password, tenant.password);
+    if (!passwordsMatch) {
+      return NextResponse.json({ message: 'Invalid credentials.' }, { status: 401 });
     }
-
-    return NextResponse.json({
-      tenant: {
+    
+    const userSession = {
         _id: tenant._id.toString(),
         name: tenant.name,
+        email: tenant.email,
         mobile: tenant.mobile,
-      },
-      pg: {
-        _id: pg._id.toString(),
-        name: pg.name,
-        address: pg.address,
-      }
-    }, { status: 200 });
+        role: 'tenant',
+        pgId: tenant.pgId?.toString(),
+        roomId: tenant.roomId?.toString(),
+    };
+
+    return NextResponse.json({ message: "Login successful!", user: userSession }, { status: 200 });
 
   } catch (error) {
     console.error("Tenant Login API Error:", error);

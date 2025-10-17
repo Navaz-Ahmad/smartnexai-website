@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link'; // Import Link for navigation
+import Link from 'next/link';
 
 // Define a type for the user object
 type User = {
@@ -31,16 +31,19 @@ const DashboardPage = () => {
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
+      // Pass the user object to the fetch function
       fetchProducts(parsedUser);
     } else {
       router.push('/login');
     }
   }, [router]);
 
+  // **THIS IS THE UPDATED FUNCTION**
+  // It now sends the user's ID and role to the backend API.
   const fetchProducts = async (currentUser: User) => {
     try {
-      // We will create this API endpoint next
-      const response = await fetch('/api/products');
+      // Pass user info as query parameters for the backend to use.
+      const response = await fetch(`/api/products?userId=${currentUser._id}&role=${currentUser.role}`);
       if (!response.ok) {
         throw new Error('Failed to fetch products');
       }
@@ -131,4 +134,3 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
-

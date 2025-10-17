@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { ObjectId, MongoClient } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { verifyPassword } from '@/lib/auth';
-import * as dbModule from '@/lib/db'; // Import all exports to type the client
+import { connectToDatabase } from '@/lib/db'; // Import our new, flexible connector
 
-// Type the MongoDB client promise to remove implicit 'any'
-const clientPromise: Promise<MongoClient> = dbModule.default as Promise<MongoClient>;
+// This API route handles user authentication, which is a core function.
+// It will only ever need to connect to the core database.
+const coreDbUri = process.env.MONGODB_URI_CORE!;
 
 // --- TypeScript interfaces for better type safety ---
 interface User {
@@ -14,15 +15,15 @@ interface User {
   phone?: string;
   password: string;
   role: string;
-  assignedProducts: (ObjectId | string)[];
+  assignedProducts: ObjectId[]; // Assuming these are always ObjectIds in the DB
 }
 
 interface UserSession {
-  _id: ObjectId;
+  _id: string; // Send as string to the client
   name: string;
   email: string;
   role: string;
-  productKey?: string; // optional, only for admins
+  productKey?: string; // Optional, only for admins
 }
 
 export async function POST(request: Request) {
@@ -33,35 +34,35 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Missing email or password.' }, { status: 400 });
     }
 
-    const client = await clientPromise;
-    const db = client.db("smartnexai_db");
+    // --- Step 1: Connect specifically to the CORE database ---
+    const client = await connectToDatabase(coreDbUri);
+    const db = client.db(); // This gets the 'smartnexai_db' from the URI
 
-    // Fetch the user and cast to User interface
+    // --- Step 2: Find the user in the 'users' collection ---
     const user = await db.collection<User>("users").findOne({ email });
 
     if (!user) {
       return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
     }
 
+    // --- Step 3: Verify the password ---
     const passwordsMatch = await verifyPassword(password, user.password);
     if (!passwordsMatch) {
       return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
     }
 
+    // --- Step 4: Prepare the user session object to send to the client ---
     const userSession: UserSession = {
-      _id: user._id,
+      _id: user._id.toString(),
       name: user.name,
       email: user.email,
       role: user.role,
     };
 
-    // Fetch productKey if admin has assigned products
+    // --- Step 5: If the user is an admin, find their assigned product's key ---
     if (user.role === 'admin' && user.assignedProducts?.length > 0) {
-      const firstProductId = typeof user.assignedProducts[0] === 'string'
-        ? new ObjectId(user.assignedProducts[0])
-        : user.assignedProducts[0];
-
-      const product = await db.collection("products").findOne({ _id: firstProductId });
+      // Find the product in the 'products' collection using the first assigned ID
+      const product = await db.collection("products").findOne({ _id: user.assignedProducts[0] });
       if (product) {
         userSession.productKey = product.productKey;
       }

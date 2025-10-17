@@ -1,9 +1,13 @@
-import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/db';
+import { NextResponse, NextRequest } from 'next/server';
+import { connectToDatabase } from '@/lib/db'; // FIX 1: Correctly import the connectToDatabase function
 import { hash } from 'bcryptjs';
 import { ObjectId } from 'mongodb';
 
-// Function to CREATE a new Admin
+// This API manages admins, which are users in the core database.
+// All operations will connect to the MONGODB_URI_CORE.
+const coreDbUri = process.env.MONGODB_URI_CORE!;
+
+// --- Function to CREATE a new Admin ---
 export async function POST(request: Request) {
   try {
     const { name, email, phone, password, productKey } = await request.json();
@@ -12,8 +16,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Missing required fields.' }, { status: 400 });
     }
 
-    const client = await clientPromise;
-    const db = client.db("smartnexai_db");
+    // FIX 2: Use the new function to connect to the CORE database
+    const client = await connectToDatabase(coreDbUri);
+    const db = client.db(); // Gets the 'smartnexai_db'
 
     // Check if user already exists
     const existingUser = await db.collection("users").findOne({ email });
@@ -47,7 +52,7 @@ export async function POST(request: Request) {
   }
 }
 
-// Function to UPDATE an existing Admin
+// --- Function to UPDATE an existing Admin ---
 export async function PUT(request: Request) {
     try {
         const { id, name, email, phone } = await request.json();
@@ -56,8 +61,8 @@ export async function PUT(request: Request) {
             return NextResponse.json({ message: 'Admin ID, name, and email are required.' }, { status: 400 });
         }
 
-        const client = await clientPromise;
-        const db = client.db("smartnexai_db");
+        const client = await connectToDatabase(coreDbUri);
+        const db = client.db();
 
         // Check if another user already has the new email
         const existingUserWithEmail = await db.collection("users").findOne({ email, _id: { $ne: new ObjectId(id) } });
@@ -82,17 +87,19 @@ export async function PUT(request: Request) {
     }
 }
 
-// Function to DELETE an Admin
-export async function DELETE(request: Request) {
+// --- Function to DELETE an Admin ---
+// Note: Changed to use URL search parameters, which is better practice for DELETE.
+export async function DELETE(request: NextRequest) {
     try {
-        const { id } = await request.json();
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get('id');
         
         if (!id) {
             return NextResponse.json({ message: 'Admin ID is required.' }, { status: 400 });
         }
 
-        const client = await clientPromise;
-        const db = client.db("smartnexai_db");
+        const client = await connectToDatabase(coreDbUri);
+        const db = client.db();
 
         const result = await db.collection("users").deleteOne({ _id: new ObjectId(id) });
 
@@ -107,4 +114,3 @@ export async function DELETE(request: Request) {
         return NextResponse.json({ message: "An internal server error occurred." }, { status: 500 });
     }
 }
-

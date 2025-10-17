@@ -2,31 +2,29 @@
 import { MongoClient } from 'mongodb';
 
 declare global {
-  // This is to avoid redeclaration issues in development
-  var _mongoClientPromise: Promise<MongoClient> | undefined;
+  var _mongoClientCache: { [uri: string]: Promise<MongoClient> };
 }
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
+if (!globalThis._mongoClientCache) {
+  globalThis._mongoClientCache = {};
 }
 
-const uri = process.env.MONGODB_URI;
-const options = {};
-
-let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
-
-if (process.env.NODE_ENV === 'development') {
-  // Use global variable to preserve client across hot reloads
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    global._mongoClientPromise = client.connect();
+export async function connectToDatabase(uri: string): Promise<MongoClient> {
+  if (!uri) {
+    throw new Error('A MongoDB URI must be provided to the connectToDatabase function.');
   }
-  clientPromise = global._mongoClientPromise;
-} else {
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
-}
 
-// Explicitly type the exported clientPromise
-export default clientPromise as Promise<MongoClient>;
+  // **THE FIX IS HERE:**
+  // Instead of checking the value directly, we use the 'in' operator.
+  // This explicitly checks if the 'uri' key *exists* in the cache object,
+  // which is a check that TypeScript understands is valid and necessary.
+  if (uri in globalThis._mongoClientCache) {
+    return globalThis._mongoClientCache[uri];
+  }
+
+  const client = new MongoClient(uri);
+  
+  globalThis._mongoClientCache[uri] = client.connect();
+
+  return globalThis._mongoClientCache[uri];
+}
