@@ -8,42 +8,47 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const pgId = searchParams.get('pgId');
-    if (!pgId) {
-      return NextResponse.json({ message: 'PG ID is required.' }, { status: 400 });
+    const date = searchParams.get('date');
+
+    if (!pgId || !date) {
+      return NextResponse.json({ message: 'PG ID and date are required.' }, { status: 400 });
     }
 
     const client = await connectToDatabase(pgDbUri);
     const db = client.db();
 
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    const startOfMonth = new Date(currentYear, currentMonth, 1);
+    const selectedDate = new Date(date);
+    const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+    const startOfNextMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1);
 
     const tenantStatuses = await db.collection("tenants").aggregate([
-      { $match: { pgId: new ObjectId(pgId), roomId: { $ne: null } } },
+      { $match: { pgId: new ObjectId(pgId), roomId: { $ne: null }, createdAt: { $lt: startOfNextMonth } }},
       { $lookup: { from: "pg_rooms", localField: "roomId", foreignField: "_id", as: "roomInfo" } },
       { $unwind: "$roomInfo" },
       { $lookup: { from: "pg_payments", localField: "_id", foreignField: "tenantId", as: "payments" } },
       {
         $addFields: {
-          rent: "$roomInfo.rent",
-          monthsSinceJoining: { $max: [1, { $add: [ { $subtract: [currentMonth, { $month: "$createdAt" }] }, { $multiply: [12, { $subtract: [currentYear, { $year: "$createdAt" }] }] }, 1 ]}] },
-          totalPaid: { $sum: "$payments.amount" },
-          paidThisMonth: { $sum: { $map: { input: { $filter: { input: "$payments", as: "payment", cond: { $gte: ["$$payment.paymentDate", startOfMonth] } } }, as: "p", in: "$$p.amount" } } }
+          rent: { $ifNull: ["$roomInfo.rent", 0] },
+          totalPaidBeforeMonthEnd: { $sum: { $map: { input: { $filter: { input: "$payments", as: "p", cond: { $lt: ["$$p.paymentDate", startOfNextMonth] } } }, as: "pf", in: "$$pf.amount" }}},
+          paymentsInSelectedMonth: { $filter: { input: "$payments", as: "p", cond: { $and: [ { $gte: ["$$p.paymentDate", startOfMonth] }, { $lt: ["$$p.paymentDate", startOfNextMonth] } ] } } },
+          monthsActive: { $max: [1, { $add: [ { $subtract: [selectedDate.getMonth(), { $month: "$createdAt" }] }, { $multiply: [12, { $subtract: [selectedDate.getFullYear(), { $year: "$createdAt" }] }] }, 1 ]}]},
         }
       },
-      { $addFields: { totalRentDue: { $multiply: ["$rent", "$monthsSinceJoining"] } } },
-      { $addFields: { totalDueAmount: { $subtract: ["$totalRentDue", "$totalPaid"] } } },
+      { $addFields: { 
+          paidInSelectedMonth: { $sum: "$paymentsInSelectedMonth.amount" },
+          // **THE FIX IS HERE: Get the ID of the most recent payment in the month.**
+          paymentId: { $first: "$paymentsInSelectedMonth._id" } 
+      }},
+      { $addFields: { totalRentObligation: { $multiply: ["$rent", "$monthsActive"] } } },
+      { $addFields: { totalDueAmount: { $subtract: ["$totalRentObligation", "$totalPaidBeforeMonthEnd"] } } },
       {
         $addFields: {
           currentMonthStatus: {
             $switch: {
               branches: [
-                { case: { $gte: ["$paidThisMonth", "$rent"] }, then: "Paid" },
-                { case: { $and: [ { $gt: ["$paidThisMonth", 0] }, { $lt: ["$paidThisMonth", "$rent"] } ] }, then: "Partially Paid" },
-              ],
-              default: "Unpaid"
+                { case: { $gte: ["$paidInSelectedMonth", "$rent"] }, then: "Paid" },
+                { case: { $and: [ { $gt: ["$paidInSelectedMonth", 0] }, { $lt: ["$paidInSelectedMonth", "$rent"] } ] }, then: "Partially Paid" },
+              ], default: "Unpaid"
             }
           }
         }
@@ -51,10 +56,9 @@ export async function GET(request: NextRequest) {
       {
         $project: {
           _id: 1, name: 1, mobile: 1, roomNumber: "$roomInfo.roomNumber",
-          // **THE FIX IS HERE: Use $ifNull to guarantee a number is always returned.**
-          // If totalDueAmount is null or doesn't exist (e.g., rent is null), this will return 0 instead.
           totalDueAmount: { $ifNull: ["$totalDueAmount", 0] },
-          currentMonthStatus: 1
+          currentMonthStatus: 1,
+          paymentId: 1 // **THE FIX IS HERE: Make sure to include the paymentId in the final output.**
         }
       }
     ]).toArray();

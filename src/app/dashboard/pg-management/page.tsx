@@ -1,21 +1,27 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
 import Link from 'next/link';
+import React, { FormEvent, useEffect, useState } from 'react';
+import { COLORS } from '@/constants/colors'; // Correct path for Next.js
 
-// Define types for better code safety
+// Define types
 type Admin = {
   _id: string;
   name: string;
   email: string;
-  phone?: string;
-  createdAt: string;
 };
 
 type Message = {
   type: 'success' | 'error';
   text: string;
 };
+
+// Simple SVG Icon for the chevron
+const ChevronRightIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5" style={{ color: COLORS.primary }}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+    </svg>
+);
 
 const PGManagementDashboard = () => {
   // Form state for creating a new admin
@@ -24,17 +30,10 @@ const PGManagementDashboard = () => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
 
-  // State for data, feedback, and modals
+  // State for data and feedback
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState<Message | null>(null);
-  
-  // State for modals
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deletingAdmin, setDeletingAdmin] = useState<Admin | null>(null);
-
 
   // Fetch existing admins when the component loads
   useEffect(() => {
@@ -80,53 +79,6 @@ const PGManagementDashboard = () => {
       setMessage({ type: 'error', text: error instanceof Error ? error.message : 'An unknown error occurred' });
     }
   };
-  
-  // Handler to update an existing admin
-  const handleUpdateAdmin = async (e: FormEvent) => {
-      e.preventDefault();
-      if (!editingAdmin) return;
-      
-      try {
-          const response = await fetch('/api/admins', {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ id: editingAdmin._id, name: editingAdmin.name, email: editingAdmin.email, phone: editingAdmin.phone }),
-          });
-          const data = await response.json();
-          if(response.ok) {
-              setMessage({ type: 'success', text: 'Admin updated successfully!' });
-              setIsEditModalOpen(false);
-              fetchProductAdmins();
-          } else {
-              throw new Error(data.message || 'Failed to update admin');
-          }
-      } catch (error: unknown) {
-           setMessage({ type: 'error', text: error instanceof Error ? error.message : 'An unknown error occurred while updating' });
-      }
-  };
-
-  // Handler to delete an admin
-  const handleDeleteAdmin = async () => {
-      if (!deletingAdmin) return;
-
-      try {
-          const response = await fetch('/api/admins', {
-              method: 'DELETE',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ id: deletingAdmin._id }),
-          });
-          const data = await response.json();
-          if(response.ok) {
-              setMessage({ type: 'success', text: 'Admin removed successfully!' });
-              setIsDeleteModalOpen(false);
-              fetchProductAdmins();
-          } else {
-              throw new Error(data.message || 'Failed to remove admin');
-          }
-      } catch (error: unknown) {
-           setMessage({ type: 'error', text: error instanceof Error ? error.message : 'An unknown error occurred while deleting' });
-      }
-  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
@@ -141,11 +93,11 @@ const PGManagementDashboard = () => {
             <div className="p-6 rounded-lg" style={{ background: 'rgba(13, 27, 42, 0.9)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
               <h2 className="text-2xl font-bold mb-5">Add New Admin</h2>
               <form onSubmit={handleAddAdmin} className="space-y-4">
-                 <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" required className="block w-full bg-gray-800 p-2 rounded-md" />
-                 <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email Address" required className="block w-full bg-gray-800 p-2 rounded-md" />
-                 <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="Phone Number" className="block w-full bg-gray-800 p-2 rounded-md" />
-                 <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" required className="block w-full bg-gray-800 p-2 rounded-md" />
-                 <button type="submit" className="w-full text-white font-semibold py-2 px-4 rounded-lg" style={{ background: 'linear-gradient(90deg, #00c6ff, #0072ff)' }}>Create Admin Account</button>
+                <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" required className="block w-full bg-gray-800 p-2 rounded-md" />
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email Address" required className="block w-full bg-gray-800 p-2 rounded-md" />
+                <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="Phone Number" className="block w-full bg-gray-800 p-2 rounded-md" />
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" required className="block w-full bg-gray-800 p-2 rounded-md" />
+                <button type="submit" className="w-full text-white font-semibold py-2 px-4 rounded-lg" style={{ background: 'linear-gradient(90deg, #00c6ff, #0072ff)' }}>Create Admin Account</button>
               </form>
             </div>
           </div>
@@ -158,15 +110,21 @@ const PGManagementDashboard = () => {
               {isLoading ? <p>Loading admins...</p> : admins.length > 0 ? (
                 <ul className="space-y-3">
                   {admins.map(admin => (
-                    <li key={admin._id} className="p-4 bg-gray-800 rounded-md flex justify-between items-center gap-4">
-                      <div className="flex-grow min-w-0">
-                        <p className="font-semibold text-lg truncate">{admin.name}</p>
-                        <p className="text-sm text-gray-400 truncate">{admin.email}</p>
-                      </div>
-                      <div className="flex-shrink-0 flex items-center gap-3">
-                        <button onClick={() => { setEditingAdmin(admin); setIsEditModalOpen(true); }} className="text-sm text-cyan-400 hover:text-cyan-300 font-medium">Edit</button>
-                        <button onClick={() => { setDeletingAdmin(admin); setIsDeleteModalOpen(true); }} className="text-sm text-red-500 hover:text-red-400 font-medium">Remove</button>
-                      </div>
+                    // **UPDATED: This is now a clean link. Edit/Remove buttons are GONE.**
+                    <li key={admin._id}>
+                      <Link 
+                        href={`/dashboard/admin-details/${admin._id}`}
+                        className="p-4 bg-gray-800 rounded-md flex justify-between items-center transition-colors hover:bg-gray-700/50"
+                      >
+                        <div className="flex-grow min-w-0">
+                          <p className="font-semibold text-lg truncate">{admin.name}</p>
+                          <p className="text-sm text-gray-400 truncate">{admin.email}</p>
+                        </div>
+                        <div className="flex-shrink-0 flex items-center gap-2 text-cyan-400">
+                           <span className="text-sm font-medium">Manage</span>
+                           <ChevronRightIcon />
+                        </div>
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -176,40 +134,10 @@ const PGManagementDashboard = () => {
         </div>
       </div>
       
-      {/* Edit Admin Modal */}
-      {isEditModalOpen && editingAdmin && (
-          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-              <div className="bg-gray-800 p-6 rounded-lg w-full max-w-md" style={{border: '1px solid rgba(255, 255, 255, 0.1)'}}>
-                  <h2 className="text-2xl font-bold mb-4">Edit Admin</h2>
-                  <form onSubmit={handleUpdateAdmin} className="space-y-4">
-                      <input type="text" value={editingAdmin.name} onChange={e => setEditingAdmin({...editingAdmin, name: e.target.value})} className="w-full bg-gray-700 p-2 rounded-md"/>
-                      <input type="email" value={editingAdmin.email} onChange={e => setEditingAdmin({...editingAdmin, email: e.target.value})} className="w-full bg-gray-700 p-2 rounded-md"/>
-                      <input type="tel" value={editingAdmin.phone ?? ''} onChange={e => setEditingAdmin({...editingAdmin, phone: e.target.value})} className="w-full bg-gray-700 p-2 rounded-md"/>
-                      <div className="flex justify-end gap-4 mt-6">
-                          <button type="button" onClick={() => setIsEditModalOpen(false)} className="py-2 px-4 rounded-lg bg-gray-600 hover:bg-gray-500">Cancel</button>
-                          <button type="submit" className="py-2 px-4 rounded-lg text-white" style={{ background: 'linear-gradient(90deg, #00c6ff, #0072ff)' }}>Save Changes</button>
-                      </div>
-                  </form>
-              </div>
-          </div>
-      )}
+      {/* All Modals and Edit/Delete logic have been removed from this file. */}
 
-      {/* Delete Confirmation Modal */}
-       {isDeleteModalOpen && deletingAdmin && (
-          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-              <div className="bg-gray-800 p-6 rounded-lg w-full max-w-md text-center" style={{border: '1px solid rgba(255, 255, 255, 0.1)'}}>
-                  <h2 className="text-2xl font-bold mb-4">Are you sure?</h2>
-                  <p className="text-gray-300 mb-6">Do you really want to remove <span className="font-semibold">{deletingAdmin.name}</span>? This action cannot be undone.</p>
-                  <div className="flex justify-center gap-4">
-                      <button onClick={() => setIsDeleteModalOpen(false)} className="py-2 px-6 rounded-lg bg-gray-600 hover:bg-gray-500">Cancel</button>
-                      <button onClick={handleDeleteAdmin} className="py-2 px-6 rounded-lg bg-red-600 hover:bg-red-500 text-white">Delete</button>
-                  </div>
-              </div>
-          </div>
-      )}
     </div>
   );
 };
 
 export default PGManagementDashboard;
-

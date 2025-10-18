@@ -50,7 +50,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: 'Payment successful and recorded!' });
 
-  } catch (error) {
+  } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "An internal server error occurred.";
     console.error("Verify Payment API Error:", message);
     return NextResponse.json({ message }, { status: 500 });

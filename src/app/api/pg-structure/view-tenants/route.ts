@@ -4,7 +4,6 @@ import { ObjectId } from 'mongodb';
 
 const pgDbUri = process.env.MONGODB_URI_PG!;
 
-// This function fetches a single PG and its fully nested structure of floors, rooms, and tenants.
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -17,21 +16,11 @@ export async function GET(request: NextRequest) {
     const client = await connectToDatabase(pgDbUri);
     const db = client.db();
 
-    // Use a complex aggregation pipeline to join all related data
     const pgData = await db.collection("pgs").aggregate([
-      // 1. Find the specific PG we want
       { $match: { _id: new ObjectId(pgId) } },
-      
-      // 2. Look up all floors belonging to this PG
       { $lookup: { from: "pg_floors", localField: "_id", foreignField: "pgId", as: "floors" } },
-      
-      // 3. Look up all rooms belonging to this PG
       { $lookup: { from: "pg_rooms", localField: "_id", foreignField: "pgId", as: "all_rooms" } },
-      
-      // 4. Look up all tenants belonging to this PG
       { $lookup: { from: "tenants", localField: "_id", foreignField: "pgId", as: "all_tenants" } },
-      
-      // 5. Reshape the data to nest rooms and tenants correctly
       {
         $addFields: {
           floors: {
@@ -50,7 +39,20 @@ export async function GET(request: NextRequest) {
                           $mergeObjects: [
                             "$$room_info",
                             {
-                              tenants: { $filter: { input: "$all_tenants", as: "tenant", cond: { $eq: ["$$tenant.roomId", "$$room_info._id"] } } }
+                              tenants: {
+                                // **THE FIX IS HERE: We now project more fields for each tenant**
+                                $map: {
+                                  input: { $filter: { input: "$all_tenants", as: "tenant", cond: { $eq: ["$$tenant.roomId", "$$room_info._id"] } } },
+                                  as: "t",
+                                  in: {
+                                    _id: "$$t._id",
+                                    name: "$$t.name",
+                                    mobile: "$$t.mobile",
+                                    email: "$$t.email",
+                                    photoBase64: "$$t.photoBase64" // Include the photo data
+                                  }
+                                }
+                              }
                             }
                           ]
                         }
@@ -63,8 +65,6 @@ export async function GET(request: NextRequest) {
           }
         }
       },
-      
-      // 6. Clean up the temporary fields
       { $project: { all_rooms: 0, all_tenants: 0 } }
     ]).toArray();
 
@@ -72,7 +72,6 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ message: 'PG not found.' }, { status: 404 });
     }
 
-    // Return the first (and only) result
     return NextResponse.json({ pg: pgData[0] });
 
   } catch (error) {
